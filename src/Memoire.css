@@ -1,0 +1,616 @@
+/* ===== MEMOIRE PAGE ===== */
+.memoire-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* ===== TABS ===== */
+.memoire-tabs {
+  display: flex;
+  gap: 0.5rem;
+  background: white;
+  border-radius: 16px;
+  padding: 0.5rem;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.mtab {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 0.7rem;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #888;
+  transition: all 0.2s;
+}
+
+.mtab:hover {
+  background: #f0fdf4;
+  color: #2D6A4F;
+}
+
+.mtab.actif {
+  background: #2D6A4F;
+  color: white;
+}
+
+/* ===== CONTENT ===== */
+.memoire-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* ===== TOOLBAR ===== */
+.memoire-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  border-radius: 16px;
+  padding: 1rem 1.5rem;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.categories {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.cat-btn {
+  background: #f0f0f0;
+  border: none;
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #666;
+  transition: all 0.2s;
+}
+
+.cat-btn:hover {
+  background: #dcfce7;
+  color: #2D6A4F;
+}
+
+.cat-btn.actif {
+  background: #2D6A4F;
+  color: white;
+}
+
+.btn-ajouter-souvenir {
+  background: #2D6A4F;
+  color: white;
+  border: none;
+  padding: 0.7rem 1.5rem;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.btn-ajouter-souvenir:hover {
+  background: #1B4332;
+  transform: translateY(-2px);
+}
+
+/* ===== SOUVENIRS GRID ===== */
+.souvenirs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.souvenir-card {
+  background: white;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+}
+
+.souvenir-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.souvenir-card.ajouter {
+  border: 2px dashed #ccc;
+  background: #fafafa;
+}
+
+.souvenir-card.ajouter:hover {
+  border-color: #2D6A4F;
+  background: #f0fdf4;
+}
+
+.souvenir-emoji {
+  background: linear-gradient(135deg, #f0fdf4, #fef9ee);
+  font-size: 4rem;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.souvenir-info {
+  padding: 1.2rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.souvenir-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.souvenir-cat {
+  background: #dcfce7;
+  color: #2D6A4F;
+  padding: 2px 10px;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.souvenir-annee {
+  font-size: 0.8rem;
+  color: #888;
+  font-weight: 600;
+}
+
+.souvenir-info h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.souvenir-info p {
+  font-size: 0.85rem;
+  color: #666;
+  line-height: 1.5;
+  flex: 1;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.souvenir-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid #f0f0f0;
+}
+
+.souvenir-auteur {
+  font-size: 0.75rem;
+  color: #888;
+}
+
+.btn-like {
+  background: #fff0f0;
+  border: none;
+  padding: 4px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #e53e3e;
+  transition: all 0.2s;
+}
+
+.btn-like:hover {
+  background: #fed7d7;
+  transform: scale(1.1);
+}
+
+.btn-like.grand {
+  padding: 0.6rem 1.5rem;
+  font-size: 0.95rem;
+}
+
+/* ===== TRADITIONS ===== */
+.traditions-header {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.traditions-header h2 {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #1a1a1a;
+  margin-bottom: 0.3rem;
+}
+
+.traditions-header p {
+  color: #888;
+  font-size: 0.9rem;
+}
+
+.traditions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.tradition-card {
+  background: white;
+  border-radius: 20px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.tradition-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+  border-color: #2D6A4F;
+}
+
+.tradition-card.ajouter {
+  border: 2px dashed #ccc;
+  background: #fafafa;
+  cursor: pointer;
+  pointer-events: all !important;
+}
+
+.tradition-card.ajouter:hover {
+  border-color: #2D6A4F;
+  background: #f0fdf4;
+}
+
+.tradition-emoji {
+  font-size: 2.5rem;
+  flex-shrink: 0;
+}
+
+.tradition-cat {
+  background: #fef3c7;
+  color: #d97706;
+  padding: 2px 10px;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: inline-block;
+  margin-bottom: 0.5rem;
+}
+
+.tradition-info h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 0.5rem;
+}
+
+.tradition-info p {
+  font-size: 0.85rem;
+  color: #666;
+  line-height: 1.6;
+}
+
+/* ===== HISTOIRE / TIMELINE ===== */
+.histoire-container {
+  background: white;
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.histoire-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.histoire-header h2 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #1a1a1a;
+  margin-bottom: 0.5rem;
+}
+
+.histoire-header p {
+  color: #888;
+  font-size: 0.9rem;
+}
+
+.timeline {
+  position: relative;
+  padding-left: 2rem;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(to bottom, #2D6A4F, #a7f3d0);
+  border-radius: 3px;
+}
+
+.timeline-item {
+  position: relative;
+  margin-bottom: 2rem;
+  padding-left: 1.5rem;
+}
+
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -2.4rem;
+  top: 0.5rem;
+  width: 14px;
+  height: 14px;
+  background: #2D6A4F;
+  border-radius: 50%;
+  border: 3px solid white;
+  box-shadow: 0 0 0 3px #2D6A4F;
+}
+
+.timeline-date {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #2D6A4F;
+  margin-bottom: 0.5rem;
+}
+
+.timeline-content {
+  background: #f0fdf4;
+  border-radius: 12px;
+  padding: 1rem 1.2rem;
+}
+
+.timeline-content h4 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 0.5rem;
+}
+
+.timeline-content p {
+  font-size: 0.85rem;
+  color: #666;
+  line-height: 1.6;
+}
+
+/* ===== DETAIL SOUVENIR ===== */
+.souvenir-detail {
+  background: white;
+  border-radius: 24px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  text-align: center;
+}
+
+.detail-emoji {
+  font-size: 5rem;
+  margin-bottom: 1rem;
+}
+
+.souvenir-detail h2 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #1a1a1a;
+  margin-bottom: 0.8rem;
+}
+
+.detail-meta {
+  display: flex;
+  justify-content: center;
+  gap: 0.8rem;
+  margin-bottom: 1rem;
+}
+
+.souvenir-detail p {
+  color: #666;
+  line-height: 1.7;
+  margin-bottom: 1.5rem;
+}
+
+.detail-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #f0f0f0;
+}
+
+.btn-fermer {
+  width: 100%;
+  background: #f0f0f0;
+  border: none;
+  padding: 0.8rem;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  color: #666;
+  transition: all 0.2s;
+}
+
+.btn-fermer:hover {
+  background: #e0e0e0;
+}
+
+/* ===== FORM ===== */
+.form-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.form-modal {
+  background: white;
+  border-radius: 24px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.form-modal h3 {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #1a1a1a;
+  margin-bottom: 1.5rem;
+}
+
+.emoji-picker {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.2rem;
+  flex-wrap: wrap;
+}
+
+.emoji-btn {
+  font-size: 1.8rem;
+  background: #f0f0f0;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  padding: 0.3rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.emoji-btn.actif {
+  border-color: #2D6A4F;
+  background: #dcfce7;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+}
+
+.form-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.form-row .form-group {
+  flex: 1;
+}
+
+.form-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #444;
+}
+
+.form-group input,
+.form-group select {
+  padding: 0.75rem 1rem;
+  border: 2px solid #f0f0f0;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+  background: #fafafa;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: #2D6A4F;
+  background: white;
+}
+
+.form-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.btn-annuler {
+  flex: 1;
+  background: white;
+  color: #666;
+  border: 2px solid #e0e0e0;
+  padding: 0.8rem;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.btn-annuler:hover {
+  border-color: #999;
+}
+
+.btn-confirmer {
+  flex: 2;
+  background: #2D6A4F;
+  color: white;
+  border: none;
+  padding: 0.8rem;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: all 0.2s;
+}
+
+.btn-confirmer:hover {
+  background: #1B4332;
+}
+
+.btn-confirmer:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+.btn-supprimer-trad {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  opacity: 0.3;
+  transition: opacity 0.2s;
+  padding: 0.3rem;
+  align-self: flex-start;
+}
+.btn-supprimer-trad:hover { opacity: 1; }
+.tradition-card.ajouter {
+  cursor: pointer;
+  pointer-events: all;
+}
+.traditions-grid {
+  pointer-events: all;
+}

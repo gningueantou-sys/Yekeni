@@ -1,0 +1,118 @@
+/* ===== STATISTIQUES PAGE ===== */
+.stats-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* ===== RESUME ===== */
+.stats-resume {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+
+.resume-card {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  border-left: 5px solid;
+}
+
+.resume-card span {
+  font-size: 2.5rem;
+}
+
+.resume-card h2 {
+  font-size: 2rem;
+  font-weight: 900;
+  color: #1a1a1a;
+}
+
+.resume-card p {
+  color: #888;
+  font-size: 0.85rem;
+}
+
+.resume-card.vert { border-left-color: #2D6A4F; }
+.resume-card.bleu { border-left-color: #00BCD4; }
+.resume-card.orange { border-left-color: #FF9800; }
+.resume-card.rouge { border-left-color: #E91E63; }
+
+/* ===== GRID ===== */
+.stats-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+/* ===== CHART CARD ===== */
+.stat-chart-card {
+  background: white;
+  border-radius: 20px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.stat-chart-card.full {
+  width: 100%;
+}
+
+.stat-chart-card h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 1rem;
+}
+
+/* ===== FAITS ===== */
+.stats-faits {
+  background: white;
+  border-radius: 20px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.stats-faits h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 1rem;
+}
+
+.faits-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+
+.fait-card {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  background: #f0fdf4;
+  border-radius: 12px;
+  padding: 1rem;
+  border-left: 3px solid #2D6A4F;
+}
+
+.fait-card span {
+  font-size: 1.8rem;
+}
+
+.fait-card h4 {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 0.2rem;
+}
+
+.fait-card p {
+  font-size: 0.78rem;
+  color: #2D6A4F;
+  font-weight: 600;
+}

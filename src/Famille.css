@@ -1,0 +1,417 @@
+/* ===== FAMILLE PAGE ===== */
+.famille-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f0fdf4 0%, #fef9ee 100%);
+}
+
+/* ===== HEADER ===== */
+.famille-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.2rem 4rem;
+  background: white;
+  box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+}
+
+.btn-retour {
+  background: transparent;
+  border: 2px solid #e0e0e0;
+  color: #666;
+  padding: 0.5rem 1.2rem;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.btn-retour:hover {
+  border-color: #2D6A4F;
+  color: #2D6A4F;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.5rem;
+}
+
+.logo-text {
+  font-weight: 800;
+  color: #2D6A4F;
+}
+
+/* ===== ETAPES ===== */
+.etapes {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.etape {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #e0e0e0;
+  color: #888;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  transition: all 0.3s;
+}
+
+.etape.actif {
+  background: #2D6A4F;
+  color: white;
+}
+
+.etape-line {
+  width: 40px;
+  height: 2px;
+  background: #e0e0e0;
+}
+
+/* ===== CONTENT ===== */
+.famille-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 3rem;
+  min-height: calc(100vh - 80px);
+}
+
+.famille-box {
+  background: white;
+  border-radius: 24px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+  padding: 2.5rem;
+  width: 100%;
+  max-width: 560px;
+}
+
+.famille-icon {
+  font-size: 3rem;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.famille-icon.success {
+  font-size: 4rem;
+}
+
+.famille-box h2 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #1a1a1a;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.famille-desc {
+  color: #888;
+  text-align: center;
+  font-size: 0.95rem;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+/* ===== FORM ===== */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+}
+
+.form-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.form-row .form-group {
+  flex: 1;
+}
+
+.form-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #444;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 0.75rem 1rem;
+  border: 2px solid #f0f0f0;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+  background: #fafafa;
+  color: #1a1a1a;
+  font-family: inherit;
+  resize: none;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: #2D6A4F;
+  background: white;
+}
+
+/* ===== BOUTONS ===== */
+.btn-suivant {
+  width: 100%;
+  background: #2D6A4F;
+  color: white;
+  border: none;
+  padding: 0.9rem;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 15px rgba(45,106,79,0.3);
+  margin-top: 1rem;
+}
+
+.btn-suivant:hover {
+  background: #1B4332;
+  transform: translateY(-2px);
+}
+
+.btn-suivant:disabled {
+  background: #ccc;
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-row {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.btn-row .btn-suivant {
+  margin-top: 0;
+}
+
+.btn-retour-etape {
+  flex: 1;
+  background: white;
+  color: #2D6A4F;
+  border: 2px solid #2D6A4F;
+  padding: 0.9rem;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-retour-etape:hover {
+  background: #f0fdf4;
+}
+
+/* ===== CODE SECRET ===== */
+.code-display {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.code-badge {
+  display: inline-block;
+  background: #1B4332;
+  color: white;
+  font-size: 2rem;
+  font-weight: 900;
+  padding: 1rem 2.5rem;
+  border-radius: 16px;
+  letter-spacing: 4px;
+  margin-bottom: 0.8rem;
+  font-family: monospace;
+}
+
+.code-hint {
+  color: #888;
+  font-size: 0.85rem;
+}
+
+/* ===== QR CODE ===== */
+.qr-placeholder {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.qr-box {
+  width: 140px;
+  height: 140px;
+  background: #f0fdf4;
+  border: 3px dashed #2D6A4F;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+}
+
+.qr-inner span {
+  font-size: 2.5rem;
+  display: block;
+  margin-bottom: 0.3rem;
+}
+
+.qr-inner p {
+  font-weight: 700;
+  color: #2D6A4F;
+  font-size: 0.9rem;
+}
+
+.qr-inner small {
+  color: #888;
+  font-size: 0.75rem;
+}
+
+.qr-placeholder > p {
+  color: #666;
+  font-size: 0.9rem;
+  max-width: 280px;
+  margin: 0 auto;
+  line-height: 1.5;
+}
+
+/* ===== NIVEAUX ACCES ===== */
+.niveau-acces {
+  margin-bottom: 1.5rem;
+}
+
+.niveau-acces h4 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 1rem;
+}
+
+.acces-grid {
+  display: flex;
+  gap: 0.8rem;
+}
+
+.acces-card {
+  flex: 1;
+  border-radius: 12px;
+  padding: 1rem;
+  text-align: center;
+  border: 2px solid transparent;
+}
+
+.acces-card span {
+  font-size: 1.5rem;
+  display: block;
+  margin-bottom: 0.4rem;
+}
+
+.acces-card h5 {
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-bottom: 0.3rem;
+}
+
+.acces-card p {
+  font-size: 0.72rem;
+  color: #666;
+  line-height: 1.4;
+}
+
+.acces-card.admin {
+  background: #fef3c7;
+  border-color: #fcd34d;
+}
+
+.acces-card.membre {
+  background: #dcfce7;
+  border-color: #86efac;
+}
+
+.acces-card.invite {
+  background: #f0f0f0;
+  border-color: #d0d0d0;
+}
+
+/* ===== RECAP ===== */
+.recap {
+  background: #f0fdf4;
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.recap-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid #dcfce7;
+}
+
+.recap-item:last-child {
+  border-bottom: none;
+}
+
+.recap-label {
+  font-size: 0.85rem;
+  color: #888;
+  font-weight: 500;
+}
+
+.recap-value {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.recap-value.code {
+  background: #1B4332;
+  color: white;
+  padding: 3px 12px;
+  border-radius: 8px;
+  font-family: monospace;
+  letter-spacing: 2px;
+}
+
+/* ===== PROCHAINES ETAPES ===== */
+.prochaines-etapes {
+  margin-bottom: 1.5rem;
+}
+
+.prochaines-etapes h4 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 1rem;
+}
+
+.etape-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.7rem;
+  background: #f0fdf4;
+  border-radius: 12px;
+  margin-bottom: 0.5rem;
+}
+
+.etape-item span {
+  font-size: 1.5rem;
+}
+
+.etape-item p {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #2D6A4F;
+}
