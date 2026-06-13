@@ -1,0 +1,54 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="100" cy="100" r="95" fill="#F5E6D3" stroke="#8B5A2B" stroke-width="2"/>
+  
+  <!-- Outer decorative circle with African pattern -->
+  <circle cx="100" cy="100" r="90" fill="none" stroke="#2D6A4F" stroke-width="3" stroke-dasharray="5,3"/>
+  
+  <!-- Center tree roots (base) -->
+  <g id="roots">
+    <path d="M 100 100 L 75 140" stroke="#8B5A2B" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M 100 100 L 100 145" stroke="#8B5A2B" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M 100 100 L 125 140" stroke="#8B5A2B" stroke-width="3" fill="none" stroke-linecap="round"/>
+  </g>
+  
+  <!-- Tree crown with geometric African patterns -->
+  <g id="tree-crown">
+    <!-- Main trunk -->
+    <rect x="95" y="65" width="10" height="35" fill="#8B5A2B" rx="2"/>
+    
+    <!-- Leaves - circles with pattern -->
+    <!-- Top circle -->
+    <circle cx="100" cy="45" r="18" fill="#2D6A4F"/>
+    <!-- Pattern inside top leaf -->
+    <circle cx="95" cy="42" r="3" fill="#F5E6D3" opacity="0.7"/>
+    <circle cx="105" cy="42" r="3" fill="#F5E6D3" opacity="0.7"/>
+    <circle cx="100" cy="48" r="3" fill="#F5E6D3" opacity="0.7"/>
+    
+    <!-- Left leaf -->
+    <circle cx="70" cy="65" r="15" fill="#2D6A4F"/>
+    <circle cx="67" cy="63" r="2.5" fill="#F5E6D3" opacity="0.7"/>
+    <circle cx="73" cy="63" r="2.5" fill="#F5E6D3" opacity="0.7"/>
+    
+    <!-- Right leaf -->
+    <circle cx="130" cy="65" r="15" fill="#2D6A4F"/>
+    <circle cx="127" cy="63" r="2.5" fill="#F5E6D3" opacity="0.7"/>
+    <circle cx="133" cy="63" r="2.5" fill="#F5E6D3" opacity="0.7"/>
+  </g>
+  
+  <!-- DNA helix integrated at bottom (subtle) -->
+  <g id="dna-subtle" opacity="0.6">
+    <path d="M 85 105 Q 90 110 95 105 T 105 105" stroke="#D4AF37" stroke-width="1.5" fill="none"/>
+    <path d="M 115 105 Q 110 110 105 105 T 95 105" stroke="#D4AF37" stroke-width="1.5" fill="none"/>
+    <circle cx="90" cy="106" r="1.5" fill="#D4AF37"/>
+    <circle cx="110" cy="106" r="1.5" fill="#D4AF37"/>
+  </g>
+  
+  <!-- Text circle at bottom with "YËKËNI" -->
+  <path id="textPath" d="M 30,100 A 70,70 0 0,1 170,100" fill="none"/>
+  <text font-family="Georgia, serif" font-size="14" font-weight="bold" fill="#8B5A2B" letter-spacing="2">
+    <textPath href="#textPath" startOffset="50%" text-anchor="middle">
+      YËKËNI
+    </textPath>
+  </text>
+</svg>
