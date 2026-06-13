@@ -1,7 +1,7 @@
 #  Yëkëni — African Family Genealogy Platform
 
 <p align="center">
-  <img src="public/logo.png" alt="Yëkëni Logo" width="150"/>
+  <img src="public/logo-adn.svg" alt="Yëkëni ADN Généalogique Logo" width="180"/>
 </p>
 
 <p align="center">
@@ -16,6 +16,20 @@
   <img src="https://img.shields.io/badge/Langues-FR%20%7C%20WO%20%7C%20FUL%20%7C%20SRR-brightgreen" />
   <img src="https://img.shields.io/badge/Made%20in-Sénégal%20🇸🇳-green" />
 </p>
+
+---
+
+## 🎨 Le Logo : ADN Généalogique
+
+Le logo de **Yëkëni** fusionne deux mondes :
+
+- **🧬 Base** : Double hélice ADN (science, tests génétiques)
+- **🌳 Sommet** : Arbre généalogique (tradition, nature, racines)
+- **🔀 Transition** : Les deux se transforment l'un en l'autre
+
+> **Symbolique** : De la génétique à la culture, de la science à la tradition — c'est l'essence de Yëkëni.
+
+**Couleurs** : Vert (croissance africaine) → Marron (terre, ancêtres)
 
 ---
 
@@ -170,6 +184,7 @@ Yekeni/
 │   │   └─ Analyses et graphiques
 │   └── ⚙️ index.js / index.css
 └── public/
+    ├── logo-adn.svg
     └── logo.png
 ```
 
