@@ -11,7 +11,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/React-18.0-61DAFB?logo=react&logoColor=white" />
   <img src="https://img.shields.io/badge/License-MIT-2D6A4F?logo=opensourceinitiative&logoColor=white" />
-  <img src="https://img.shields.io/badge/Status-En%20développement-orange" />
+  <img src="https://img.shields.io/badge/Status-Beta%20(PWA)-blue" />
   <img src="https://img.shields.io/badge/IA-Claude%20Anthropic-blueviolet" />
   <img src="https://img.shields.io/badge/Langues-FR%20%7C%20WO%20%7C%20FUL%20%7C%20SRR-brightgreen" />
   <img src="https://img.shields.io/badge/Made%20in-Sénégal%20🇸🇳-green" />
@@ -21,91 +21,95 @@
 
 ## 📌 Contexte & Problématique
 
-En Afrique, des millions de familles perdent chaque jour une partie de leur histoire. Les plateformes de généalogie étrangères comme **Ancestry.com** ou **23andMe** collectent et monétisent les données ADN et familiales des Africains sans consentement réel. Pendant ce temps, les langues locales s'éteignent et les jeunes de la diaspora ne connaissent plus leurs origines.
+En Afrique, des millions de familles perdent chaque jour une partie de leur histoire. Les plateformes de généalogie étrangères comme **Ancestry.com** ou **23andMe** collectent et monétisent les données génétiques et culturelles des Africains.
 
 > *"Ancestry.com connaît mieux la généalogie africaine que les Africains eux-mêmes — Yëkëni est là pour changer ça."*
 
-**Yëkëni** (mot Wolof signifiant **"se reconnaître"**) répond à ce défi avec une solution locale, souveraine et culturellement adaptée à la réalité africaine.
+**Yëkëni** (mot Wolof signifiant **"se reconnaître"**) propose une alternative **souveraine, locale et culturellement adaptée** à la réalité africaine.
 
 ---
 
-## 🎯 Problèmes résolus
+## 🎯 Ce que Yëkëni résout
 
 | Problème | Solution Yëkëni |
 |---|---|
-| 🕵️ Espionnage culturel par plateformes étrangères | Données stockées localement, aucun serveur tiers |
-| 🌍 Déracinement des Africains de la diaspora | Section "Mes Racines" avec villages, ethnies, langues |
-| 📖 Disparition des traditions orales | Mémoire familiale avec traditions et histoire |
-| 🗣️ Barrière linguistique | Support Français, Wolof, Pulaar, Sérère |
-| 🩺 Perte des données médicales familiales | Fiche santé par membre |
+| 🕵️ Espionnage culturel par plateformes étrangères | **Données 100% locales** — stockées dans votre appareil, jamais envoyées à l'étranger |
+| 🌍 Déracinement des Africains de la diaspora | Section **"Mes Racines"** avec villages, ethnies, langues |
+| 📖 Disparition des traditions orales | **Mémoire familiale** interactive avec histoires et traditions |
+| 🗣️ Barrière linguistique | Support **Français, Wolof, Pulaar, Sérère** |
+| 🩺 Perte des données médicales familiales | **Fiche santé** par membre (groupe sanguin, allergies, antécédents) |
 
 ---
 
-## ✨ Fonctionnalités principales
+## ✨ Fonctionnalités Actuelles (MVP)
 
 ### 🌳 Arbre Généalogique Interactif
-> Visualisez et naviguez dans votre famille sur plusieurs générations
+> Construisez et explorez votre généalogie sur plusieurs générations
 
-- Navigation par clic entre membres (père → grand-père → arrière-grand-père...)
-- Ajout de père, mère, frères, sœurs, enfants, conjoint
-- Modification et suppression de membres
-- Upload de photos de profil
-- Fil d'Ariane pour se repérer dans l'arbre
-- Recherche de membres
-- **Biographies générées par IA** (Claude Anthropic)
-- Sauvegarde automatique
+- ✅ Navigation interactive entre membres (père → grand-père → arrière-grand-père...)
+- ✅ Ajout de relations : père, mère, frères, sœurs, enfants, conjoint
+- ✅ Modification et suppression de membres
+- ✅ Upload de photos de profil
+- ✅ Fil d'Ariane pour se repérer
+- ✅ Recherche par nom
+- ✅ **Biographies générées par IA** (Claude Anthropic)
+- ✅ Sauvegarde automatique en local
 
 ### 🌍 Mes Racines
 > Documentez les origines culturelles de chaque ancêtre
 
-- Origine ethnique (Peul, Wolof, Sérère, Mandingue, Diola...)
-- Village et région d'origine
-- Langues parlées avec ajout personnalisé
-- Voix des anciens (témoignages audio)
-- Visualisation des ethnies et langues de toute la famille
+- ✅ Origine ethnique (Peul, Wolof, Sérère, Mandingue, Diola...)
+- ✅ Village et région d'origine
+- ✅ Langues parlées
+- ✅ Visualisation des ethnies et langues de la famille
 
 ### 👥 Gestion des Membres
-> Un profil complet pour chaque membre de la famille
+> Un profil complet pour chaque membre
 
-- Informations personnelles : nom, profession, ville, pays
-- Données de santé : groupe sanguin, allergies, maladies héréditaires
-- Recherche et filtrage par nom, ville ou pays
+- ✅ Informations personnelles : nom, profession, ville, pays
+- ✅ Données de santé : groupe sanguin, allergies, maladies héréditaires
+- ✅ Recherche et filtrage avancés
 
 ### 📸 Mémoire Familiale
-> Préservez l'histoire et les traditions pour les générations futures
+> Préservez l'histoire pour les générations futures
 
-- Souvenirs avec catégories (mariage, naissance, diplôme...)
-- Traditions culturelles et religieuses
-- Timeline interactive de l'histoire familiale
-- Système de likes sur les souvenirs
+- ✅ Souvenirs avec catégories (mariage, naissance, diplôme...)
+- ✅ Traditions culturelles et religieuses
+- ✅ Timeline interactive
+- ✅ Système de likes
 
 ### 🎂 Événements Familiaux
-> Ne manquez plus aucun moment important
+> Calendrier et rappels
 
-- Calendrier des événements avec icônes personnalisées
-- Alertes automatiques (rouge si moins de 7 jours)
-- Compteur de jours restants
+- ✅ Calendrier interactif avec icônes personnalisées
+- ✅ Alertes automatiques (rouge si moins de 7 jours)
+- ✅ Compteur de jours restants
 
-### Autres fonctionnalités
-| Fonctionnalité | Description |
+### Autres Fonctionnalités
+| Fonctionnalité | Statut |
 |---|---|
-| 💬 Chat familial | Messagerie entre membres |
-| 🗺️ Carte mondiale | Localisation géographique de chaque membre |
-| 📊 Statistiques | Analyses et visualisations de la famille |
-| 🔑 Code famille | Accès sécurisé par code unique |
-| 🩺 Santé familiale | Historique médical complet |
+| 🗺️ Carte mondiale des membres | ✅ Actif |
+| 📊 Statistiques familiales | ✅ Actif |
+| 🔑 Code famille pour l'accès sécurisé | ✅ Actif |
+| 🩺 Historique médical familial | ✅ Actif |
 
 ---
 
 ## 🛡️ Souveraineté & Sécurité des Données
 
+### Engagements
 | Engagement | Détail |
 |---|---|
-| ✅ Données locales | Stockées dans le navigateur (localStorage), jamais envoyées à l'étranger |
-| ✅ Zéro monétisation | Aucune donnée vendue à des tiers |
-| ✅ Accès sécurisé | Code famille unique pour chaque famille |
-| ✅ Open Source | Code transparent et auditable par tous |
-| ✅ Langues locales | Interface disponible en Wolof, Pulaar, Sérère |
+| ✅ **Données 100% locales** | Stockées uniquement dans votre navigateur (localStorage). Zéro serveur externe. |
+| ✅ **Zéro monétisation** | Vos données ne sont jamais vendues, partagées ou analysées. |
+| ✅ **Accès sécurisé** | Code famille unique pour protéger vos données. |
+| ✅ **Open Source** | Code transparent et auditable par tous. |
+| ✅ **Hors ligne** | Fonctionne sans connexion Internet. |
+
+### ⚠️ Limitations actuelles
+- **localStorage** : Les données restent sur votre appareil. Si vous videz le cache, elles sont perdues.
+- **Pas de synchronisation** : Chaque appareil a ses propres données. La sync multi-device arrive prochainement.
+- **IA avec clé API** : Pour les biographies générées par IA, vous devez fournir votre propre clé API Claude (gratuite/payante selon usage).
 
 ---
 
@@ -119,10 +123,10 @@ En Afrique, des millions de familles perdent chaque jour une partie de leur hist
 
 ```bash
 # 1. Cloner le projet
-git clone https://github.com/gningueantou-sys/Y-k-ni.git
+git clone https://github.com/gningueantou-sys/Yekeni.git
 
-# 2. Aller dans le dossier frontend
-cd Y-k-ni
+# 2. Entrer dans le dossier
+cd Yekeni
 
 # 3. Installer les dépendances
 npm install
@@ -136,89 +140,38 @@ npm start
 ---
 
 ## 📁 Structure du Projet
-Y-k-ni/
 
-└── src/
-
-│
-
-├── 🏠 App.js / App.css
-
-│       Page d'accueil publique (hero, fonctionnalités, stats)
-
-│
-
-├── 🔐 Auth.js / Auth.css
-
-│       Authentification — connexion, inscription, code famille
-
-│
-
-├── 🏡 Famille.js / Famille.css
-
-│       Création d'une famille avec génération du code QR
-
-│
-
-├── 📊 Dashboard.js / Dashboard.css
-
-│       Tableau de bord principal avec sidebar de navigation
-
-│
-
-├── 🌳 ArbreAnime.js / ArbreAnime.css
-
-│       Arbre généalogique interactif — navigation, ajout, modification
-
-│       Intègre l'IA pour générer des biographies automatiques
-
-│
-
-├── 👥 Membres.js / Membres.css
-
-│       Liste et profils détaillés des membres de la famille
-
-│
-
-├── 🌍 Racines.js / Racines.css
-
-│       Origines ethniques, villages, langues africaines
-
-│
-
-├── 📸 Memoire.js / Memoire.css
-
-│       Souvenirs, traditions culturelles, histoire familiale
-
-│
-
-├── 🩺 Sante.js / Sante.css
-
-│       Données médicales — groupes sanguins, maladies héréditaires
-
-│
-
-├── 🗺️ Carte.js / Carte.css
-
-│       Carte mondiale interactive (Leaflet) des membres
-
-│
-
-├── 💬 Chat.js / Chat.css
-
-│       Messagerie familiale interne
-
-│
-
-├── 📊 Statistiques.js / Statistiques.css
-
-│       Graphiques et analyses (Recharts)
-
-│
-
-└── ⚙️ index.js / index.css
-
-Point d'entrée de l'application React
+```
+Yekeni/
+├── src/
+│   ├── 🏠 App.js / App.css
+│   │   └─ Page d'accueil publique
+│   ├── 🔐 Auth.js / Auth.css
+│   │   └─ Authentification locale (code famille)
+│   ├── 🏡 Famille.js / Famille.css
+│   │   └─ Création de famille + code QR
+│   ├── 📊 Dashboard.js / Dashboard.css
+│   │   └─ Tableau de bord principal
+│   ├── 🌳 ArbreAnime.js / ArbreAnime.css
+│   │   └─ Arbre généalogique interactif
+│   ├── 👥 Membres.js / Membres.css
+│   │   └─ Gestion des profils
+│   ├── 🌍 Racines.js / Racines.css
+│   │   └─ Origines ethniques et langues
+│   ├── 📸 Memoire.js / Memoire.css
+│   │   └─ Souvenirs et traditions
+│   ├── 🩺 Sante.js / Sante.css
+│   │   └─ Données médicales
+│   ├── 🗺️ Carte.js / Carte.css
+│   │   └─ Localisation géographique
+│   ├── 💬 Chat.js / Chat.css
+│   │   └─ Messagerie familiale
+│   ├── 📊 Statistiques.js / Statistiques.css
+│   │   └─ Analyses et graphiques
+│   └── ⚙️ index.js / index.css
+└── public/
+    └── logo.png
+```
 
 ---
 
@@ -226,12 +179,12 @@ Point d'entrée de l'application React
 
 | Technologie | Version | Usage |
 |---|---|---|
-| **React.js** | 18.x | Framework frontend principal |
-| **Leaflet + React-Leaflet** | 4.x | Carte interactive mondiale |
-| **Recharts** | 2.x | Graphiques et visualisations |
-| **Claude AI (Anthropic)** | Sonnet | Génération de biographies IA |
-| **localStorage** | — | Persistance des données en local |
-| **CSS personnalisé** | — | Design, animations, thème africain |
+| **React.js** | 18.x | Framework frontend |
+| **Leaflet + React-Leaflet** | 4.x | Carte interactive |
+| **Recharts** | 2.x | Graphiques |
+| **Claude AI (Anthropic)** | Sonnet | Biographies IA |
+| **localStorage** | — | Persistance locale |
+| **CSS** | — | Design custom |
 
 ---
 
@@ -246,7 +199,28 @@ Point d'entrée de l'application React
 
 ---
 
-## 🏆 Hackathons & Compétitions ciblés
+## 🗺️ Roadmap (6-12 mois)
+
+### Phase 1 : Stabilité (Juillet - Septembre 2025)
+- [ ] Exporter l'arbre en PDF
+- [ ] Sauvegarde cloud optionnelle (avec chiffrement)
+- [ ] Tests utilisateurs avec familles sénégalaises
+
+### Phase 2 : Expansion (Octobre - Décembre 2025)
+- [ ] Synchronisation multi-appareils
+- [ ] Application mobile (React Native)
+- [ ] Mode hors ligne amélioré
+
+### Phase 3 : IA & Avancé (2026)
+- [ ] Reconnaissance faciale simple
+- [ ] Recommandations de liens familiaux
+- [ ] Intégration données ADN (optionnelle)
+
+---
+
+## 🏆 Hackathons & Compétitions
+
+Ce projet cible :
 
 | Compétition | Thème | Pertinence |
 |---|---|---|
@@ -254,24 +228,23 @@ Point d'entrée de l'application React
 | 🏅 **Hackathon iSAFE** | Souveraineté numérique & IA | ⭐⭐⭐⭐⭐ |
 | 🏅 **ID4Africa Hackathon** | Identité numérique africaine | ⭐⭐⭐⭐⭐ |
 | 🏅 **Orange Social Venture Prize** | Impact social en Afrique | ⭐⭐⭐⭐ |
-| 🏅 **Dakar Digital Week** | Innovation tech au Sénégal | ⭐⭐⭐⭐ |
 
 ---
 
-## 🗺️ Roadmap
+## 🤝 Contribuer
 
-- [x] Arbre généalogique interactif
-- [x] Gestion des membres
-- [x] Origines ethniques et culturelles
-- [x] Mémoire familiale
-- [x] Événements avec alertes
-- [x] Biographies générées par IA
-- [x] Sauvegarde localStorage
-- [ ] Authentification réelle (backend)
-- [ ] Synchronisation multi-appareils
-- [ ] Application mobile (React Native)
-- [ ] Export PDF de l'arbre
-- [ ] Reconnaissance faciale par IA
+Les contributions sont les bienvenues ! Pour contribuer :
+
+1. Fork le projet
+2. Créez une branche (`git checkout -b feature/AmazingFeature`)
+3. Committez vos changements (`git commit -m 'Add some AmazingFeature'`)
+4. Poussez vers la branche (`git push origin feature/AmazingFeature`)
+5. Ouvrez une Pull Request
+
+### Besoin d'aide ?
+- 📖 **Documentation** : À venir
+- 💬 **Questions** : Ouvrez une issue
+- 🐛 **Bugs** : Signalez via GitHub Issues
 
 ---
 
@@ -281,12 +254,21 @@ Point d'entrée de l'application React
 - 🎓 Étudiant en L1 Informatique
 - 📍 Dakar, Sénégal
 - 🌐 GitHub : [@gningueantou-sys](https://github.com/gningueantou-sys)
+- 📧 Contactez-moi pour les partenariats ou questions
 
 ---
 
 ## 📄 Licence
 
 Ce projet est sous licence **MIT** — voir le fichier [LICENSE](LICENSE) pour plus de détails.
+
+---
+
+## 🙏 Remerciements
+
+- Anthropic pour Claude Sonnet (biographies IA)
+- React community pour les outils extraordinaires
+- Les familles sénégalaises qui testent et donnent des retours
 
 ---
 
