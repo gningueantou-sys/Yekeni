@@ -1,7 +1,7 @@
 #  Yëkëni — African Family Genealogy Platform
 
 <p align="center">
-  <img src="public/logo-adn.svg" alt="Yëkëni ADN Généalogique Logo" width="180"/>
+  <img src="public/logo.png" alt="Yëkëni Logo" width="180"/>
 </p>
 
 <p align="center">
@@ -19,23 +19,9 @@
 
 ---
 
-## 🎨 Le Logo : ADN Généalogique
-
-Le logo de **Yëkëni** fusionne deux mondes :
-
-- **🧬 Base** : Double hélice ADN (science, tests génétiques)
-- **🌳 Sommet** : Arbre généalogique (tradition, nature, racines)
-- **🔀 Transition** : Les deux se transforment l'un en l'autre
-
-> **Symbolique** : De la génétique à la culture, de la science à la tradition — c'est l'essence de Yëkëni.
-
-**Couleurs** : Vert (croissance africaine) → Marron (terre, ancêtres)
-
----
-
 ## 📌 Contexte & Problématique
 
-En Afrique, des millions de familles perdent chaque jour une partie de leur histoire. Les plateformes de généalogie étrangères comme **Ancestry.com** ou **23andMe** collectent et monétisent les données génétiques et culturelles des Africains.
+En Afrique, des millions de familles perdent chaque jour une partie de leur histoire. Les plateformes de généalogie étrangères comme **Ancestry.com** ou **23andMe** collectent et monétisent les données génétiques et culturelles africaines.
 
 > *"Ancestry.com connaît mieux la généalogie africaine que les Africains eux-mêmes — Yëkëni est là pour changer ça."*
 
@@ -184,8 +170,8 @@ Yekeni/
 │   │   └─ Analyses et graphiques
 │   └── ⚙️ index.js / index.css
 └── public/
-    ├── logo-adn.svg
-    └── logo.png
+    ├── logo.png
+    └── logo-adn.svg
 ```
 
 ---
