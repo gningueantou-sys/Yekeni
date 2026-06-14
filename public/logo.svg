@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="180" height="180">
+  <!-- Background -->
+  <rect width="1000" height="1000" fill="white"/>
+  
+  <!-- Heart wings bottom -->
+  <path d="M 350 750 Q 300 800 250 750" stroke="#8B4513" stroke-width="25" fill="none" stroke-linecap="round"/>
+  <path d="M 650 750 Q 700 800 750 750" stroke="#8B4513" stroke-width="25" fill="none" stroke-linecap="round"/>
+  
+  <!-- Heart shape -->
+  <g transform="translate(500, 820)">
+    <!-- Left half of heart -->
+    <path d="M 0 20 Q -50 -30 -80 -30 Q -110 -30 -110 0 Q -110 40 0 100" fill="none" stroke="#FF8C00" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- Right half of heart -->
+    <path d="M 0 20 Q 50 -30 80 -30 Q 110 -30 110 0 Q 110 40 0 100" fill="none" stroke="#FF8C00" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- Infinity symbol inside -->
+    <path d="M -60 20 Q -90 0 -60 -20 Q -30 -40 0 -20 Q 30 0 60 -20 Q 90 -40 60 -60 Q 30 -80 0 -60 Q -30 -40 -60 -20" fill="none" stroke="white" stroke-width="15" stroke-linecap="round"/>
+  </g>
+  
+  <!-- Book -->
+  <g transform="translate(500, 550)">
+    <!-- Left page -->
+    <path d="M -150 -80 L -150 80 L 0 80 L 0 -80 Z" fill="none" stroke="#FF8C00" stroke-width="20"/>
+    <!-- Right page -->
+    <path d="M 0 -80 L 0 80 L 150 80 L 150 -80 Z" fill="none" stroke="#FF8C00" stroke-width="20"/>
+    <!-- Spine -->
+    <line x1="0" y1="-80" x2="0" y2="80" stroke="#228B22" stroke-width="8"/>
+    <!-- Left page lines -->
+    <line x1="-120" y1="-40" x2="-20" y2="-40" stroke="#228B22" stroke-width="8"/>
+    <line x1="-120" y1="0" x2="-20" y2="0" stroke="#228B22" stroke-width="8"/>
+    <line x1="-120" y1="40" x2="-20" y2="40" stroke="#228B22" stroke-width="8"/>
+    <!-- Right page lines -->
+    <line x1="20" y1="-40" x2="120" y2="-40" stroke="#228B22" stroke-width="8"/>
+    <line x1="20" y1="0" x2="120" y2="0" stroke="#228B22" stroke-width="8"/>
+    <line x1="20" y1="40" x2="120" y2="40" stroke="#228B22" stroke-width="8"/>
+  </g>
+  
+  <!-- Tree trunk -->
+  <g transform="translate(500, 350)">
+    <!-- Main trunk -->
+    <path d="M -40 100 Q -50 50 -60 0 Q -50 -20 -30 -30 L 30 -30 Q 50 -20 60 0 Q 50 50 40 100" fill="#8B4513" stroke="#8B4513" stroke-width="2"/>
+    <!-- Trunk patterns -->
+    <circle cx="-30" cy="20" r="12" fill="#FF8C00"/>
+    <circle cx="30" cy="20" r="12" fill="#FF8C00"/>
+    <circle cx="-20" cy="50" r="10" fill="#FF8C00"/>
+    <circle cx="20" cy="50" r="10" fill="#FF8C00"/>
+    <circle cx="0" cy="80" r="12" fill="#FF8C00"/>
+  </g>
+  
+  <!-- Tree branches and leaves -->
+  <g transform="translate(500, 350)">
+    <!-- Left branches -->
+    <!-- Far left branch -->
+    <line x1="-60" y1="-30" x2="-180" y2="-100" stroke="#228B22" stroke-width="20" stroke-linecap="round"/>
+    <circle cx="-200" cy="-110" r="18" fill="#FF8C00"/>
+    <circle cx="-160" cy="-140" r="20" fill="#228B22"/>
+    <circle cx="-180" cy="-160" r="18" fill="#228B22"/>
+    
+    <!-- Left-middle branch -->
+    <line x1="-50" y1="-40" x2="-120" y2="-140" stroke="#228B22" stroke-width="18" stroke-linecap="round"/>
+    <circle cx="-130" cy="-160" r="16" fill="#FF8C00"/>
+    <circle cx="-90" cy="-180" r="18" fill="#228B22"/>
+    
+    <!-- Center-left branch -->
+    <line x1="-30" y1="-35" x2="-60" y2="-180" stroke="#228B22" stroke-width="16" stroke-linecap="round"/>
+    <circle cx="-65" cy="-200" r="14" fill="#FF8C00"/>
+    <circle cx="-40" cy="-210" r="16" fill="#228B22"/>
+    
+    <!-- Right branches (mirror) -->
+    <!-- Far right branch -->
+    <line x1="60" y1="-30" x2="180" y2="-100" stroke="#228B22" stroke-width="20" stroke-linecap="round"/>
+    <circle cx="200" cy="-110" r="18" fill="#FF8C00"/>
+    <circle cx="160" cy="-140" r="20" fill="#228B22"/>
+    <circle cx="180" cy="-160" r="18" fill="#228B22"/>
+    
+    <!-- Right-middle branch -->
+    <line x1="50" y1="-40" x2="120" y2="-140" stroke="#228B22" stroke-width="18" stroke-linecap="round"/>
+    <circle cx="130" cy="-160" r="16" fill="#FF8C00"/>
+    <circle cx="90" cy="-180" r="18" fill="#228B22"/>
+    
+    <!-- Center-right branch -->
+    <line x1="30" y1="-35" x2="60" y2="-180" stroke="#228B22" stroke-width="16" stroke-linecap="round"/>
+    <circle cx="65" cy="-200" r="14" fill="#FF8C00"/>
+    <circle cx="40" cy="-210" r="16" fill="#228B22"/>
+    
+    <!-- Additional tech nodes (circles) -->
+    <circle cx="-220" cy="-80" r="12" fill="none" stroke="#7FFF00" stroke-width="4"/>
+    <circle cx="-140" cy="-200" r="10" fill="none" stroke="#7FFF00" stroke-width="3"/>
+    <circle cx="-60" cy="-240" r="11" fill="none" stroke="#7FFF00" stroke-width="3"/>
+    <circle cx="220" cy="-80" r="12" fill="none" stroke="#7FFF00" stroke-width="4"/>
+    <circle cx="140" cy="-200" r="10" fill="none" stroke="#7FFF00" stroke-width="3"/>
+    <circle cx="60" cy="-240" r="11" fill="none" stroke="#7FFF00" stroke-width="3"/>
+    <circle cx="0" cy="-250" r="13" fill="none" stroke="#7FFF00" stroke-width="4"/>
+  </g>
+  
+  <!-- Connecting lines from trunk to branches (tech aesthetic) -->
+  <g transform="translate(500, 350)" stroke="#228B22" stroke-width="3" fill="none">
+    <path d="M -20 -30 L -60 -180"/>
+    <path d="M 0 -35 L -120 -140"/>
+    <path d="M 20 -30 L -180 -100"/>
+    <path d="M 0 -35 L 120 -140"/>
+    <path d="M 20 -30 L 180 -100"/>
+  </g>
+</svg>
