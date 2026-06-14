@@ -1,7 +1,7 @@
 #  Yëkëni — African Family Genealogy Platform
 
 <p align="center">
-  <img src="public/logo.png" alt="Yëkëni Logo" width="180"/>
+  <img src="public/logo.svg" alt="Yëkëni Logo" width="180"/>
 </p>
 
 <p align="center">
@@ -21,7 +21,7 @@
 
 ## 📌 Contexte & Problématique
 
-En Afrique, des millions de familles perdent chaque jour une partie de leur histoire. Les plateformes de généalogie étrangères comme **Ancestry.com** ou **23andMe** collectent et monétisent les données génétiques et culturelles africaines.
+En Afrique, des millions de familles perdent chaque jour une partie de leur histoire. Les plateformes de généalogie étrangères comme **Ancestry.com** ou **23andMe** collectent et monétisent les d[...]
 
 > *"Ancestry.com connaît mieux la généalogie africaine que les Africains eux-mêmes — Yëkëni est là pour changer ça."*
 
@@ -170,7 +170,7 @@ Yekeni/
 │   │   └─ Analyses et graphiques
 │   └── ⚙️ index.js / index.css
 └── public/
-    ├── logo.png
+    ├── logo.svg
     └── logo-adn.svg
 ```
 
