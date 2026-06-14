@@ -1,7 +1,7 @@
 #  Yëkëni — African Family Genealogy Platform
 
 <p align="center">
-  <img src="public/logo.svg" alt="Yëkëni Logo" width="180"/>
+<img src="public/logo.png" alt="Yëkëni Logo" width="180"/>
 </p>
 
 <p align="center">
