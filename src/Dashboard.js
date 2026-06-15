@@ -9,7 +9,12 @@ import Carte from './Carte';
 import ArbreAnime from './ArbreAnime';
 import Statistiques from './Statistiques';
 
-
+const joursRestants = (dateStr) => {
+  const today = new Date();
+  const d = new Date(dateStr);
+  const diff = Math.ceil((d - today) / (1000*60*60*24));
+  return diff;
+};
 function Dashboard({ onRetour }) {
   const [onglet, setOnglet] = useState('accueil');
 

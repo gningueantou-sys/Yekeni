@@ -4,10 +4,10 @@ import './Racines.css';
 const STORAGE_KEY = 'yekeni_racines';
 
 const membresDef = [
-  { id:1, nom:'Moussa Diallo', avatar:'👴', ethnie:'Peul', region:'Fouta Toro', village:'Matam', pays:'Sénégal', langues:['Pulaar','Wolof'], generation:'Grand-père' },
-  { id:2, nom:'Fatoumata Diallo', avatar:'👵', ethnie:'Wolof', region:'Casamance', village:'Ziguinchor', pays:'Sénégal', langues:['Wolof','Français'], generation:'Grand-mère' },
-  { id:3, nom:'Ibrahim Diallo', avatar:'👨', ethnie:'Peul', region:'Fouta Toro', village:'Matam', pays:'Sénégal', langues:['Pulaar'], generation:'Père' },
-  { id:4, nom:'Aminata Diallo', avatar:'👩', ethnie:'Sérère', region:'Sine Saloum', village:'Fatick', pays:'Sénégal', langues:['Sérère','Wolof','Français'], generation:'Mère' },
+  { id:1, nom:'Moussa Diallo', avatar:'👴', ethnie:'Peul', region:'Fouta Toro', village:'Matam', pays:'Sénégal', langues:['Pulaar','Wolof'], generation:'Grand-père', visibilite:'public' },
+  { id:2, nom:'Fatoumata Diallo', avatar:'👵', ethnie:'Wolof', region:'Casamance', village:'Ziguinchor', pays:'Sénégal', langues:['Wolof','Français'], generation:'Grand-mère', visibilite:'public' },
+  { id:3, nom:'Ibrahim Diallo', avatar:'👨', ethnie:'Peul', region:'Fouta Toro', village:'Matam', pays:'Sénégal', langues:['Pulaar'], generation:'Père', visibilite:'famille' },
+  { id:4, nom:'Aminata Diallo', avatar:'👩', ethnie:'Sérère', region:'Sine Saloum', village:'Fatick', pays:'Sénégal', langues:['Sérère','Wolof','Français'], generation:'Mère', visibilite:'prive' },
 ];
 
 const chargerMembres = () => {
@@ -26,7 +26,7 @@ export default function Racines() {
   const [membres, setMembres] = useState(chargerMembres);
   const [sel, setSel] = useState(null);
   const [showForm, setShowForm] = useState(false);
-  const [fd, setFd] = useState({ nom:'', avatar:'👤', ethnie:'Peul', region:'', village:'', pays:'Sénégal', langues:[], generation:'Moi' });
+  const [fd, setFd] = useState({ nom:'', avatar:'👤', ethnie:'Peul', region:'', village:'', pays:'Sénégal', langues:[], generation:'Moi', visibilite:'public' });
   const [onglet, setOnglet] = useState('carte');
   const [showAutreLangue, setShowAutreLangue] = useState(false);
   const [autreLangue, setAutreLangue] = useState('');
@@ -36,7 +36,13 @@ export default function Racines() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(membres));
     } catch(e) {}
   }, [membres]);
-
+<div className="fg-r"><label>👁️ Visibilité</label>
+  <select value={fd.visibilite} onChange={e=>setFd({...fd,visibilite:e.target.value})}>
+    <option value="public">🌍 Public — Visible par tous</option>
+    <option value="famille">👥 Famille — Membres uniquement</option>
+    <option value="prive">🔒 Privé — Admin & Co-Admins uniquement</option>
+  </select>
+</div>
   const ajouter = () => {
     if (!fd.nom) return;
     setMembres([...membres, { ...fd, id: Date.now() }]);
