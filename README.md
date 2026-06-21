@@ -175,3 +175,178 @@ npm start
 ---
 
 ## 📁 Structure du Projet
+Yekeni/
+
+├── src/
+
+│   ├── 🏠 App.js / App.css
+
+│   │   └─ Page d'accueil publique
+
+│   ├── 🔐 Auth.js / Auth.css
+
+│   │   └─ Authentification locale (code famille)
+
+│   ├── 🏡 Famille.js / Famille.css
+
+│   │   └─ Création de famille + code QR
+
+│   ├── 📊 Dashboard.js / Dashboard.css
+
+│   │   └─ Tableau de bord principal
+
+│   ├── 🌳 ArbreAnime.js / ArbreAnime.css
+
+│   │   └─ Arbre généalogique interactif
+
+│   ├── 👥 Membres.js / Membres.css
+
+│   │   └─ Gestion des profils + système Admin/Co-Admin
+
+│   ├── 🌍 Racines.js / Racines.css
+
+│   │   └─ Origines ethniques, langues + visibilité
+
+│   ├── 📸 Memoire.js / Memoire.css
+
+│   │   └─ Souvenirs et traditions
+
+│   ├── 🩺 Sante.js / Sante.css
+
+│   │   └─ Données médicales
+
+│   ├── 🗺️ Carte.js / Carte.css
+
+│   │   └─ Localisation géographique
+
+│   ├── 💬 Chat.js / Chat.css
+
+│   │   └─ Messagerie familiale
+
+│   ├── 📊 Statistiques.js / Statistiques.css
+
+│   │   └─ Analyses et graphiques
+
+│   ├── 🔔 Notifications.js
+
+│   │   └─ Notifications familiales + badge
+
+│   ├── 📄 RapportPDF.js
+
+│   │   └─ Export PDF complet (jsPDF)
+
+│   └── ⚙️ index.js / index.css
+
+└── public/
+
+├── logo.png
+
+└── logo-adn.svg
+
+---
+
+## 🛠️ Stack Technique
+
+| Technologie | Version | Usage |
+|---|---|---|
+| **React.js** | 18.x | Framework frontend |
+| **Leaflet + React-Leaflet** | 4.x | Carte interactive |
+| **Recharts** | 2.x | Graphiques |
+| **jsPDF + jspdf-autotable** | 2.x | Génération de rapports PDF |
+| **Claude AI (Anthropic)** | Sonnet | Biographies IA |
+| **localStorage** | — | Persistance locale |
+| **CSS** | — | Design custom |
+
+---
+
+## 🌍 Langues Supportées
+
+| Langue | Code | Statut |
+|---|---|---|
+| 🇫🇷 Français | `fr` | ✅ Complet |
+| 🇸🇳 Wolof | `wo` | ✅ Interface |
+| 🇸🇳 Pulaar | `ful` | 🔄 En cours |
+| 🇸🇳 Sérère | `srr` | 🔄 En cours |
+
+---
+
+## 🗺️ Roadmap (6-12 mois)
+
+### Phase 1 : Stabilité (Juillet - Septembre 2025)
+- [x] Rapport PDF complet (membres, racines, événements, arbre)
+- [x] Système de gouvernance (Admin/Co-Admin/Transfert)
+- [x] Notifications familiales
+- [x] Visibilité des données (Public/Famille/Privé)
+- [ ] Sauvegarde cloud optionnelle (avec chiffrement) — **Supabase en cours**
+- [ ] Tests utilisateurs avec familles sénégalaises
+
+### Phase 2 : Expansion (Octobre - Décembre 2025)
+- [ ] Synchronisation multi-appareils
+- [ ] Application mobile (React Native)
+- [ ] Mode hors ligne amélioré
+
+### Phase 3 : IA & Avancé (2026)
+- [ ] Reconnaissance faciale simple
+- [ ] Recommandations de liens familiaux
+- [ ] Intégration données ADN (optionnelle)
+
+---
+
+## 🏆 Hackathons & Compétitions
+
+Ce projet cible :
+
+| Compétition | Thème | Pertinence |
+|---|---|---|
+| 🏅 **AIMS Senegal Hackathon** | Innovation scientifique africaine | ⭐⭐⭐⭐⭐ |
+| 🏅 **Hackathon iSAFE** | Souveraineté numérique & IA | ⭐⭐⭐⭐⭐ |
+| 🏅 **ID4Africa Hackathon** | Identité numérique africaine | ⭐⭐⭐⭐⭐ |
+| 🏅 **Orange Social Venture Prize** | Impact social en Afrique | ⭐⭐⭐⭐ |
+
+---
+
+## 🤝 Contribuer
+
+Les contributions sont les bienvenues ! Pour contribuer :
+
+1. Fork le projet
+2. Créez une branche (`git checkout -b feature/AmazingFeature`)
+3. Committez vos changements (`git commit -m 'Add some AmazingFeature'`)
+4. Poussez vers la branche (`git push origin feature/AmazingFeature`)
+5. Ouvrez une Pull Request
+
+### Besoin d'aide ?
+- 📖 **Documentation** : À venir
+- 💬 **Questions** : Ouvrez une issue
+- 🐛 **Bugs** : Signalez via GitHub Issues
+
+---
+
+## 👨‍💻 Développeur
+
+**Pape Antou Gningue**
+- 🎓 Étudiant en L1 Informatique
+- 📍 Dakar, Sénégal
+- 🌐 GitHub : [@gningueantou-sys](https://github.com/gningueantou-sys)
+- 📧 Contactez-moi pour les partenariats ou questions
+
+---
+
+## 📄 Licence
+
+Ce projet est sous licence **MIT** — voir le fichier [LICENSE](LICENSE) pour plus de détails.
+
+---
+
+## 🙏 Remerciements
+
+- Anthropic pour Claude Sonnet (biographies IA)
+- React community pour les outils extraordinaires
+- Les familles sénégalaises qui testent et donnent des retours
+
+---
+
+<p align="center">
+  <strong>Fait avec ❤️ au Sénégal · © 2025 Yëkëni</strong><br/>
+  <em>Préservons ensemble l'héritage culturel africain</em>
+</p>
