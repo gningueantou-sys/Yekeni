@@ -21,7 +21,7 @@
 
 ## 📌 Contexte & Problématique
 
-En Afrique, des millions de familles perdent chaque jour une partie de leur histoire. Les plateformes de généalogie étrangères comme **Ancestry.com** ou **23andMe** collectent et monétisent les d[...]
+En Afrique, des millions de familles perdent chaque jour une partie de leur histoire. Les plateformes de généalogie étrangères comme **Ancestry.com** ou **23andMe** collectent et monétisent les données ADN et familiales des Africains sans consentement réel.
 
 > *"Ancestry.com connaît mieux la généalogie africaine que les Africains eux-mêmes — Yëkëni est là pour changer ça."*
 
@@ -62,6 +62,7 @@ En Afrique, des millions de familles perdent chaque jour une partie de leur hist
 - ✅ Village et région d'origine
 - ✅ Langues parlées
 - ✅ Visualisation des ethnies et langues de la famille
+- ✅ **Visibilité configurable** : Public / Famille / Privé
 
 ### 👥 Gestion des Membres
 > Un profil complet pour chaque membre
@@ -85,6 +86,34 @@ En Afrique, des millions de familles perdent chaque jour une partie de leur hist
 - ✅ Alertes automatiques (rouge si moins de 7 jours)
 - ✅ Compteur de jours restants
 
+### 👑 Système de Gouvernance Familiale
+> Adapté à la réalité africaine où la notion de chef de famille est centrale
+
+- ✅ **Admin principal** — chef de famille avec tous les droits
+- ✅ **Co-Admins** (max 2) — gèrent la famille en cas d'absence de l'Admin
+- ✅ **Transfert d'Admin** — l'Admin peut nommer un successeur à tout moment, avec confirmation
+- ✅ **Membres** — accès standard à la famille
+- ✅ **Invités** — accès limité en lecture seule
+- ✅ Protection : impossible de supprimer l'Admin sans transfert préalable du rôle
+
+### 🔔 Notifications Familiales
+> Restez informé de toutes les activités de votre famille
+
+- ✅ Alertes pour les activités (ajout membre, souvenir, modification arbre...)
+- ✅ Badge de notifications non lues
+- ✅ Marquer comme lu / Effacer tout
+- ✅ Panneau latéral animé
+
+### 📄 Rapport Familial PDF
+> Archivez l'histoire de votre famille en un clic
+
+- ✅ Export PDF professionnel complet (5 pages)
+- ✅ Page de couverture avec statistiques
+- ✅ Liste des membres avec alertes santé
+- ✅ Origines et racines ethniques
+- ✅ Événements et souvenirs
+- ✅ Arbre généalogique complet
+
 ### Autres Fonctionnalités
 | Fonctionnalité | Statut |
 |---|---|
@@ -92,6 +121,10 @@ En Afrique, des millions de familles perdent chaque jour une partie de leur hist
 | 📊 Statistiques familiales | ✅ Actif |
 | 🔑 Code famille pour l'accès sécurisé | ✅ Actif |
 | 🩺 Historique médical familial | ✅ Actif |
+| 🔔 Notifications familiales | ✅ Actif |
+| 📄 Rapport PDF complet | ✅ Actif |
+| 👑 Système Admin/Co-Admin/Transfert | ✅ Actif |
+| 🔒 Visibilité données (Public/Famille/Privé) | ✅ Actif |
 
 ---
 
@@ -103,6 +136,8 @@ En Afrique, des millions de familles perdent chaque jour une partie de leur hist
 | ✅ **Données 100% locales** | Stockées uniquement dans votre navigateur (localStorage). Zéro serveur externe. |
 | ✅ **Zéro monétisation** | Vos données ne sont jamais vendues, partagées ou analysées. |
 | ✅ **Accès sécurisé** | Code famille unique pour protéger vos données. |
+| ✅ **Gouvernance familiale** | Système Admin/Co-Admin avec transfert sécurisé en cas d'absence. |
+| ✅ **Visibilité granulaire** | Chaque origine peut être Public, Famille ou Privé. |
 | ✅ **Open Source** | Code transparent et auditable par tous. |
 | ✅ **Hors ligne** | Fonctionne sans connexion Internet. |
 
@@ -140,140 +175,3 @@ npm start
 ---
 
 ## 📁 Structure du Projet
-
-```
-Yekeni/
-├── src/
-│   ├── 🏠 App.js / App.css
-│   │   └─ Page d'accueil publique
-│   ├── 🔐 Auth.js / Auth.css
-│   │   └─ Authentification locale (code famille)
-│   ├── 🏡 Famille.js / Famille.css
-│   │   └─ Création de famille + code QR
-│   ├── 📊 Dashboard.js / Dashboard.css
-│   │   └─ Tableau de bord principal
-│   ├── 🌳 ArbreAnime.js / ArbreAnime.css
-│   │   └─ Arbre généalogique interactif
-│   ├── 👥 Membres.js / Membres.css
-│   │   └─ Gestion des profils
-│   ├── 🌍 Racines.js / Racines.css
-│   │   └─ Origines ethniques et langues
-│   ├── 📸 Memoire.js / Memoire.css
-│   │   └─ Souvenirs et traditions
-│   ├── 🩺 Sante.js / Sante.css
-│   │   └─ Données médicales
-│   ├── 🗺️ Carte.js / Carte.css
-│   │   └─ Localisation géographique
-│   ├── 💬 Chat.js / Chat.css
-│   │   └─ Messagerie familiale
-│   ├── 📊 Statistiques.js / Statistiques.css
-│   │   └─ Analyses et graphiques
-│   └── ⚙️ index.js / index.css
-└── public/
-    ├── logo.svg
-    └── logo-adn.svg
-```
-
----
-
-## 🛠️ Stack Technique
-
-| Technologie | Version | Usage |
-|---|---|---|
-| **React.js** | 18.x | Framework frontend |
-| **Leaflet + React-Leaflet** | 4.x | Carte interactive |
-| **Recharts** | 2.x | Graphiques |
-| **Claude AI (Anthropic)** | Sonnet | Biographies IA |
-| **localStorage** | — | Persistance locale |
-| **CSS** | — | Design custom |
-
----
-
-## 🌍 Langues Supportées
-
-| Langue | Code | Statut |
-|---|---|---|
-| 🇫🇷 Français | `fr` | ✅ Complet |
-| 🇸🇳 Wolof | `wo` | ✅ Interface |
-| 🇸🇳 Pulaar | `ful` | 🔄 En cours |
-| 🇸🇳 Sérère | `srr` | 🔄 En cours |
-
----
-
-## 🗺️ Roadmap (6-12 mois)
-
-### Phase 1 : Stabilité (Juillet - Septembre 2025)
-- [ ] Exporter l'arbre en PDF
-- [ ] Sauvegarde cloud optionnelle (avec chiffrement)
-- [ ] Tests utilisateurs avec familles sénégalaises
-
-### Phase 2 : Expansion (Octobre - Décembre 2025)
-- [ ] Synchronisation multi-appareils
-- [ ] Application mobile (React Native)
-- [ ] Mode hors ligne amélioré
-
-### Phase 3 : IA & Avancé (2026)
-- [ ] Reconnaissance faciale simple
-- [ ] Recommandations de liens familiaux
-- [ ] Intégration données ADN (optionnelle)
-
----
-
-## 🏆 Hackathons & Compétitions
-
-Ce projet cible :
-
-| Compétition | Thème | Pertinence |
-|---|---|---|
-| 🏅 **AIMS Senegal Hackathon** | Innovation scientifique africaine | ⭐⭐⭐⭐⭐ |
-| 🏅 **Hackathon iSAFE** | Souveraineté numérique & IA | ⭐⭐⭐⭐⭐ |
-| 🏅 **ID4Africa Hackathon** | Identité numérique africaine | ⭐⭐⭐⭐⭐ |
-| 🏅 **Orange Social Venture Prize** | Impact social en Afrique | ⭐⭐⭐⭐ |
-
----
-
-## 🤝 Contribuer
-
-Les contributions sont les bienvenues ! Pour contribuer :
-
-1. Fork le projet
-2. Créez une branche (`git checkout -b feature/AmazingFeature`)
-3. Committez vos changements (`git commit -m 'Add some AmazingFeature'`)
-4. Poussez vers la branche (`git push origin feature/AmazingFeature`)
-5. Ouvrez une Pull Request
-
-### Besoin d'aide ?
-- 📖 **Documentation** : À venir
-- 💬 **Questions** : Ouvrez une issue
-- 🐛 **Bugs** : Signalez via GitHub Issues
-
----
-
-## 👨‍💻 Développeur
-
-**Pape Antou Gningue**
-- 🎓 Étudiant en L1 Informatique
-- 📍 Dakar, Sénégal
-- 🌐 GitHub : [@gningueantou-sys](https://github.com/gningueantou-sys)
-- 📧 Contactez-moi pour les partenariats ou questions
-
----
-
-## 📄 Licence
-
-Ce projet est sous licence **MIT** — voir le fichier [LICENSE](LICENSE) pour plus de détails.
-
----
-
-## 🙏 Remerciements
-
-- Anthropic pour Claude Sonnet (biographies IA)
-- React community pour les outils extraordinaires
-- Les familles sénégalaises qui testent et donnent des retours
-
----
-
-<p align="center">
-  <strong>Fait avec ❤️ au Sénégal · © 2025 Yëkëni</strong><br/>
-  <em>Préservons ensemble l'héritage culturel africain</em>
-</p>
