@@ -36,13 +36,7 @@ export default function Racines() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(membres));
     } catch(e) {}
   }, [membres]);
-<div className="fg-r"><label>👁️ Visibilité</label>
-  <select value={fd.visibilite} onChange={e=>setFd({...fd,visibilite:e.target.value})}>
-    <option value="public">🌍 Public — Visible par tous</option>
-    <option value="famille">👥 Famille — Membres uniquement</option>
-    <option value="prive">🔒 Privé — Admin & Co-Admins uniquement</option>
-  </select>
-</div>
+
   const ajouter = () => {
     if (!fd.nom) return;
     setMembres([...membres, { ...fd, id: Date.now() }]);

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Auth from './Auth';
 import Famille from './Famille';
 import Dashboard from './Dashboard';
+
 import './App.css';
 
 function App() {
@@ -19,7 +20,11 @@ function App() {
 
   if (page === 'auth') return <Auth />;
   if (page === 'famille') return <Famille onRetour={() => setPage('accueil')} />;
-  if (page === 'dashboard') return <Dashboard onRetour={() => setPage('accueil')} />;
+  if (page === 'dashboard') return (
+    
+      <Dashboard onRetour={() => setPage('accueil')} />
+    
+  );
 
   const textes = {
     fr: {

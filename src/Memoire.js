@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Memoire.css';
+
+const STORAGE_SOU = 'yekeni_souvenirs';
+const STORAGE_TRAD = 'yekeni_traditions';
 
 const souvenirsDef = [
   { id:1, titre:'Mariage de Papa et Maman', annee:'1985', categorie:'Mariage', emoji:'💒', description:'Le plus beau jour de notre famille. Célébrée à Dakar avec toute la famille.', auteur:'Moussa Diallo', likes:12 },
@@ -17,18 +20,29 @@ const traditionsDef = [
   { id:4, titre:'Korité en famille', categorie:'Fête', emoji:'🎉', description:'La fête de fin du Ramadan réunit toute la famille. Chacun porte ses plus beaux habits.' },
 ];
 
+const charger = (key, def) => {
+  try {
+    const saved = localStorage.getItem(key);
+    if (saved) return JSON.parse(saved);
+  } catch(e) {}
+  return def;
+};
+
 const categories = ['Tous','Mariage','Naissance','Baptême','Accomplissement','Réunion','Patrimoine'];
 
 export default function Memoire() {
   const [onglet, setOnglet] = useState('souvenirs');
   const [categorie, setCategorie] = useState('Tous');
-  const [souvenirs, setSouvenirs] = useState(souvenirsDef);
-  const [traditions, setTraditions] = useState(traditionsDef);
+  const [souvenirs, setSouvenirs] = useState(()=>charger(STORAGE_SOU, souvenirsDef));
+  const [traditions, setTraditions] = useState(()=>charger(STORAGE_TRAD, traditionsDef));
   const [souvenirSel, setSouvenirSel] = useState(null);
   const [showFormSou, setShowFormSou] = useState(false);
   const [showFormTrad, setShowFormTrad] = useState(false);
   const [nouveau, setNouveau] = useState({ titre:'', annee:'', categorie:'Mariage', emoji:'📸', description:'', auteur:'' });
   const [nouvTrad, setNouvTrad] = useState({ titre:'', categorie:'Cuisine', emoji:'🍚', description:'' });
+
+  useEffect(()=>{ try { localStorage.setItem(STORAGE_SOU, JSON.stringify(souvenirs)); } catch(e){} }, [souvenirs]);
+  useEffect(()=>{ try { localStorage.setItem(STORAGE_TRAD, JSON.stringify(traditions)); } catch(e){} }, [traditions]);
 
   const souvenirsFiltres = souvenirs.filter(s => categorie === 'Tous' || s.categorie === categorie);
 
@@ -65,14 +79,12 @@ export default function Memoire() {
 
   return (
     <div className="memoire-page">
-
       <div className="memoire-tabs">
         <button className={onglet==='souvenirs'?'mtab actif':'mtab'} onClick={()=>setOnglet('souvenirs')}>📸 Souvenirs</button>
         <button className={onglet==='traditions'?'mtab actif':'mtab'} onClick={()=>setOnglet('traditions')}>📖 Traditions & Culture</button>
         <button className={onglet==='histoire'?'mtab actif':'mtab'} onClick={()=>setOnglet('histoire')}>🏛️ Histoire familiale</button>
       </div>
 
-      {/* SOUVENIRS */}
       {onglet==='souvenirs' && (
         <div className="memoire-content">
           <div className="memoire-toolbar">
@@ -112,7 +124,6 @@ export default function Memoire() {
         </div>
       )}
 
-      {/* TRADITIONS */}
       {onglet==='traditions' && (
         <div className="memoire-content">
           <div className="traditions-header">
@@ -146,7 +157,6 @@ export default function Memoire() {
         </div>
       )}
 
-      {/* HISTOIRE */}
       {onglet==='histoire' && (
         <div className="memoire-content">
           <div className="histoire-container">
@@ -175,7 +185,6 @@ export default function Memoire() {
         </div>
       )}
 
-      {/* DETAIL SOUVENIR */}
       {souvenirSel && (
         <div className="form-overlay" onClick={()=>setSouvenirSel(null)}>
           <div className="souvenir-detail" onClick={e=>e.stopPropagation()}>
@@ -201,7 +210,6 @@ export default function Memoire() {
         </div>
       )}
 
-      {/* FORM SOUVENIR */}
       {showFormSou && (
         <div className="form-overlay">
           <div className="form-modal">
@@ -211,28 +219,23 @@ export default function Memoire() {
                 <button key={e} className={nouveau.emoji===e?'emoji-btn actif':'emoji-btn'} onClick={()=>setNouveau({...nouveau,emoji:e})}>{e}</button>
               ))}
             </div>
-            <div className="form-group">
-              <label>Titre *</label>
+            <div className="form-group"><label>Titre *</label>
               <input type="text" placeholder="ex: Mariage de Papa et Maman" value={nouveau.titre} onChange={e=>setNouveau({...nouveau,titre:e.target.value})}/>
             </div>
             <div className="form-row">
-              <div className="form-group">
-                <label>Année</label>
+              <div className="form-group"><label>Année</label>
                 <input type="text" placeholder="ex: 1985" value={nouveau.annee} onChange={e=>setNouveau({...nouveau,annee:e.target.value})}/>
               </div>
-              <div className="form-group">
-                <label>Catégorie</label>
+              <div className="form-group"><label>Catégorie</label>
                 <select value={nouveau.categorie} onChange={e=>setNouveau({...nouveau,categorie:e.target.value})}>
                   {categories.filter(c=>c!=='Tous').map(c=><option key={c}>{c}</option>)}
                 </select>
               </div>
             </div>
-            <div className="form-group">
-              <label>Description</label>
+            <div className="form-group"><label>Description</label>
               <textarea placeholder="Racontez ce souvenir..." value={nouveau.description} onChange={e=>setNouveau({...nouveau,description:e.target.value})} rows={3} style={{resize:'none',fontFamily:'inherit',padding:'0.75rem 1rem',border:'2px solid #f0f0f0',borderRadius:'12px',outline:'none',fontSize:'0.95rem'}}/>
             </div>
-            <div className="form-group">
-              <label>Votre nom</label>
+            <div className="form-group"><label>Votre nom</label>
               <input type="text" placeholder="ex: Moussa Diallo" value={nouveau.auteur} onChange={e=>setNouveau({...nouveau,auteur:e.target.value})}/>
             </div>
             <div className="form-buttons">
@@ -243,7 +246,6 @@ export default function Memoire() {
         </div>
       )}
 
-      {/* FORM TRADITION */}
       {showFormTrad && (
         <div className="form-overlay">
           <div className="form-modal">
@@ -253,18 +255,15 @@ export default function Memoire() {
                 <button key={e} className={nouvTrad.emoji===e?'emoji-btn actif':'emoji-btn'} onClick={()=>setNouvTrad({...nouvTrad,emoji:e})}>{e}</button>
               ))}
             </div>
-            <div className="form-group">
-              <label>Titre *</label>
+            <div className="form-group"><label>Titre *</label>
               <input type="text" placeholder="ex: Thiéboudienne du dimanche" value={nouvTrad.titre} onChange={e=>setNouvTrad({...nouvTrad,titre:e.target.value})}/>
             </div>
-            <div className="form-group">
-              <label>Catégorie</label>
+            <div className="form-group"><label>Catégorie</label>
               <select value={nouvTrad.categorie} onChange={e=>setNouvTrad({...nouvTrad,categorie:e.target.value})}>
                 {['Cuisine','Religion','Histoire orale','Fête','Musique','Habillement'].map(c=><option key={c}>{c}</option>)}
               </select>
             </div>
-            <div className="form-group">
-              <label>Description</label>
+            <div className="form-group"><label>Description</label>
               <textarea placeholder="Décrivez cette tradition..." value={nouvTrad.description} onChange={e=>setNouvTrad({...nouvTrad,description:e.target.value})} rows={3} style={{resize:'none',fontFamily:'inherit',padding:'0.75rem 1rem',border:'2px solid #f0f0f0',borderRadius:'12px',outline:'none',fontSize:'0.95rem'}}/>
             </div>
             <div className="form-buttons">
@@ -274,7 +273,6 @@ export default function Memoire() {
           </div>
         </div>
       )}
-
     </div>
   );
 }
