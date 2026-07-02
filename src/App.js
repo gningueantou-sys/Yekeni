@@ -1,30 +1,53 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import Loader from './Loader';
+import { supabase } from './supabaseClient';
 import Auth from './Auth';
 import Famille from './Famille';
 import Dashboard from './Dashboard';
-
 import './App.css';
 
 function App() {
   const [langueActive, setLangueActive] = useState('fr');
   const [page, setPage] = useState('accueil');
+  const [session, setSession] = useState(null);
+  const [chargement, setChargement] = useState(true);
 
-  React.useEffect(() => {
+  useEffect(() => {
+    // Vérifie si l'utilisateur est déjà connecté au chargement
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (session) setPage('dashboard');
+      setChargement(false);
+    });
+
+    // Écoute les changements de session (connexion / déconnexion)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      if (session) setPage('dashboard');
+      else setPage('accueil');
+    });
+
     window.addEventListener('goToFamille', () => setPage('famille'));
     window.addEventListener('goToDashboard', () => setPage('dashboard'));
+
     return () => {
+      subscription.unsubscribe();
       window.removeEventListener('goToFamille', () => setPage('famille'));
       window.removeEventListener('goToDashboard', () => setPage('dashboard'));
     };
   }, []);
 
+  const seDeconnecter = async () => {
+    await supabase.auth.signOut();
+    setSession(null);
+    setPage('accueil');
+  };
+
+  if (chargement) return <Loader />;
+
   if (page === 'auth') return <Auth />;
   if (page === 'famille') return <Famille onRetour={() => setPage('accueil')} />;
-  if (page === 'dashboard') return (
-    
-      <Dashboard onRetour={() => setPage('accueil')} />
-    
-  );
+  if (page === 'dashboard') return <Dashboard onRetour={seDeconnecter} />;
 
   const textes = {
     fr: {
@@ -46,7 +69,6 @@ function App() {
   return (
     <div className="app">
 
-      {/* HEADER */}
       <header className="header">
         <div className="logo">
           <img src="/logo.png" alt="Yëkëni" className="logo-img" style={{mixBlendMode:'multiply'}}/>
@@ -68,7 +90,6 @@ function App() {
         </div>
       </header>
 
-      {/* HERO */}
       <section className="hero" id="accueil">
         <div className="hero-content">
           <div className="hero-logo-large">
@@ -128,7 +149,6 @@ function App() {
         </div>
       </section>
 
-      {/* FONCTIONNALITES */}
       <section className="features" id="fonctionnalites">
         <h2>Tout ce dont ta famille a besoin</h2>
         <div className="features-grid">
@@ -149,7 +169,6 @@ function App() {
         </div>
       </section>
 
-      {/* SANTE */}
       <section className="sante" id="sante">
         <div className="sante-content">
           <div className="sante-text">
@@ -195,7 +214,6 @@ function App() {
         </div>
       </section>
 
-      {/* STATS */}
       <section className="stats">
         {[
           { val:'10K+', label:'Familles connectées' },
@@ -210,7 +228,6 @@ function App() {
         ))}
       </section>
 
-      {/* FOOTER */}
       <footer className="footer">
         <div className="footer-content">
           <div className="footer-brand">
