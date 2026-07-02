@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
 import './Dashboard.css';
-import Notifications, { NotifBadge } from './Notifications';
+import Notifications from './Notifications';
 import Racines from './Racines';
 import Membres from './Membres';
 import Sante from './Sante';
