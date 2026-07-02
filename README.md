@@ -10,12 +10,16 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/React-18.0-61DAFB?logo=react&logoColor=white" />
+  <img src="https://img.shields.io/badge/Supabase-Backend-3ECF8E?logo=supabase&logoColor=white" />
+  <img src="https://img.shields.io/badge/Vercel-Deployed-black?logo=vercel&logoColor=white" />
   <img src="https://img.shields.io/badge/License-MIT-2D6A4F?logo=opensourceinitiative&logoColor=white" />
-  <img src="https://img.shields.io/badge/Status-Beta%20(PWA)-blue" />
+  <img src="https://img.shields.io/badge/Status-Beta-blue" />
   <img src="https://img.shields.io/badge/IA-Claude%20Anthropic-blueviolet" />
   <img src="https://img.shields.io/badge/Langues-FR%20%7C%20WO%20%7C%20FUL%20%7C%20SRR-brightgreen" />
   <img src="https://img.shields.io/badge/Made%20in-Sénégal%20🇸🇳-green" />
 </p>
+
+🌐 **Site en ligne** : [yekeni.vercel.app](https://yekeni.vercel.app)
 
 ---
 
@@ -33,7 +37,7 @@ En Afrique, des millions de familles perdent chaque jour une partie de leur hist
 
 | Problème | Solution Yëkëni |
 |---|---|
-| 🕵️ Espionnage culturel par plateformes étrangères | **Données 100% locales** — stockées dans votre appareil, jamais envoyées à l'étranger |
+| 🕵️ Espionnage culturel par plateformes étrangères | **Données sécurisées** sur Supabase avec RLS (Row Level Security) |
 | 🌍 Déracinement des Africains de la diaspora | Section **"Mes Racines"** avec villages, ethnies, langues |
 | 📖 Disparition des traditions orales | **Mémoire familiale** interactive avec histoires et traditions |
 | 🗣️ Barrière linguistique | Support **Français, Wolof, Pulaar, Sérère** |
@@ -44,8 +48,6 @@ En Afrique, des millions de familles perdent chaque jour une partie de leur hist
 ## ✨ Fonctionnalités Actuelles (MVP)
 
 ### 🌳 Arbre Généalogique Interactif
-> Construisez et explorez votre généalogie sur plusieurs générations
-
 - ✅ Navigation interactive entre membres (père → grand-père → arrière-grand-père...)
 - ✅ Ajout de relations : père, mère, frères, sœurs, enfants, conjoint
 - ✅ Modification et suppression de membres
@@ -53,195 +55,55 @@ En Afrique, des millions de familles perdent chaque jour une partie de leur hist
 - ✅ Fil d'Ariane pour se repérer
 - ✅ Recherche par nom
 - ✅ **Biographies générées par IA** (Claude Anthropic)
-- ✅ Sauvegarde automatique en local
 
 ### 🌍 Mes Racines
-> Documentez les origines culturelles de chaque ancêtre
-
 - ✅ Origine ethnique (Peul, Wolof, Sérère, Mandingue, Diola...)
 - ✅ Village et région d'origine
 - ✅ Langues parlées
 - ✅ Visualisation des ethnies et langues de la famille
-- ✅ **Visibilité configurable** : Public / Famille / Privé
+- ✅ **Sauvegardé sur Supabase** — accessible depuis tous les appareils
 
 ### 👥 Gestion des Membres
-> Un profil complet pour chaque membre
-
 - ✅ Informations personnelles : nom, profession, ville, pays
 - ✅ Données de santé : groupe sanguin, allergies, maladies héréditaires
-- ✅ Recherche et filtrage avancés
+- ✅ **Sauvegardé sur Supabase** — partagé avec toute la famille
 
 ### 📸 Mémoire Familiale
-> Préservez l'histoire pour les générations futures
-
 - ✅ Souvenirs avec catégories (mariage, naissance, diplôme...)
 - ✅ Traditions culturelles et religieuses
 - ✅ Timeline interactive
 - ✅ Système de likes
 
 ### 🎂 Événements Familiaux
-> Calendrier et rappels
-
 - ✅ Calendrier interactif avec icônes personnalisées
 - ✅ Alertes automatiques (rouge si moins de 7 jours)
-- ✅ Compteur de jours restants
+- ✅ **Sauvegardé sur Supabase** — visible par toute la famille
 
 ### 👑 Système de Gouvernance Familiale
-> Adapté à la réalité africaine où la notion de chef de famille est centrale
-
 - ✅ **Admin principal** — chef de famille avec tous les droits
 - ✅ **Co-Admins** (max 2) — gèrent la famille en cas d'absence de l'Admin
-- ✅ **Transfert d'Admin** — l'Admin peut nommer un successeur à tout moment, avec confirmation
-- ✅ **Membres** — accès standard à la famille
+- ✅ **Transfert d'Admin** — avec confirmation
+- ✅ **Membres** — accès standard
 - ✅ **Invités** — accès limité en lecture seule
-- ✅ Protection : impossible de supprimer l'Admin sans transfert préalable du rôle
 
 ### 🔔 Notifications Familiales
-> Restez informé de toutes les activités de votre famille
-
-- ✅ Alertes pour les activités (ajout membre, souvenir, modification arbre...)
+- ✅ Alertes pour les activités familiales
 - ✅ Badge de notifications non lues
-- ✅ Marquer comme lu / Effacer tout
 - ✅ Panneau latéral animé
 
 ### 📄 Rapport Familial PDF
-> Archivez l'histoire de votre famille en un clic
-
 - ✅ Export PDF professionnel complet (5 pages)
 - ✅ Page de couverture avec statistiques
 - ✅ Liste des membres avec alertes santé
-- ✅ Origines et racines ethniques
-- ✅ Événements et souvenirs
-- ✅ Arbre généalogique complet
 
 ### Autres Fonctionnalités
 | Fonctionnalité | Statut |
 |---|---|
 | 🗺️ Carte mondiale des membres | ✅ Actif |
 | 📊 Statistiques familiales | ✅ Actif |
-| 🔑 Code famille pour l'accès sécurisé | ✅ Actif |
+| 🔐 Authentification Supabase | ✅ Actif |
 | 🩺 Historique médical familial | ✅ Actif |
-| 🔔 Notifications familiales | ✅ Actif |
 | 📄 Rapport PDF complet | ✅ Actif |
-| 👑 Système Admin/Co-Admin/Transfert | ✅ Actif |
-| 🔒 Visibilité données (Public/Famille/Privé) | ✅ Actif |
-
----
-
-## 🛡️ Souveraineté & Sécurité des Données
-
-### Engagements
-| Engagement | Détail |
-|---|---|
-| ✅ **Données 100% locales** | Stockées uniquement dans votre navigateur (localStorage). Zéro serveur externe. |
-| ✅ **Zéro monétisation** | Vos données ne sont jamais vendues, partagées ou analysées. |
-| ✅ **Accès sécurisé** | Code famille unique pour protéger vos données. |
-| ✅ **Gouvernance familiale** | Système Admin/Co-Admin avec transfert sécurisé en cas d'absence. |
-| ✅ **Visibilité granulaire** | Chaque origine peut être Public, Famille ou Privé. |
-| ✅ **Open Source** | Code transparent et auditable par tous. |
-| ✅ **Hors ligne** | Fonctionne sans connexion Internet. |
-
-### ⚠️ Limitations actuelles
-- **localStorage** : Les données restent sur votre appareil. Si vous videz le cache, elles sont perdues.
-- **Pas de synchronisation** : Chaque appareil a ses propres données. La sync multi-device arrive prochainement.
-- **IA avec clé API** : Pour les biographies générées par IA, vous devez fournir votre propre clé API Claude (gratuite/payante selon usage).
-
----
-
-## 🚀 Installation & Démarrage
-
-### Prérequis
-- [Node.js](https://nodejs.org/) >= 16
-- npm >= 8
-
-### Étapes
-
-```bash
-# 1. Cloner le projet
-git clone https://github.com/gningueantou-sys/Yekeni.git
-
-# 2. Entrer dans le dossier
-cd Yekeni
-
-# 3. Installer les dépendances
-npm install
-
-# 4. Lancer en développement
-npm start
-```
-
-✅ L'application s'ouvre automatiquement sur [http://localhost:3000](http://localhost:3000)
-
----
-
-## 📁 Structure du Projet
-Yekeni/
-
-├── src/
-
-│   ├── 🏠 App.js / App.css
-
-│   │   └─ Page d'accueil publique
-
-│   ├── 🔐 Auth.js / Auth.css
-
-│   │   └─ Authentification locale (code famille)
-
-│   ├── 🏡 Famille.js / Famille.css
-
-│   │   └─ Création de famille + code QR
-
-│   ├── 📊 Dashboard.js / Dashboard.css
-
-│   │   └─ Tableau de bord principal
-
-│   ├── 🌳 ArbreAnime.js / ArbreAnime.css
-
-│   │   └─ Arbre généalogique interactif
-
-│   ├── 👥 Membres.js / Membres.css
-
-│   │   └─ Gestion des profils + système Admin/Co-Admin
-
-│   ├── 🌍 Racines.js / Racines.css
-
-│   │   └─ Origines ethniques, langues + visibilité
-
-│   ├── 📸 Memoire.js / Memoire.css
-
-│   │   └─ Souvenirs et traditions
-
-│   ├── 🩺 Sante.js / Sante.css
-
-│   │   └─ Données médicales
-
-│   ├── 🗺️ Carte.js / Carte.css
-
-│   │   └─ Localisation géographique
-
-│   ├── 💬 Chat.js / Chat.css
-
-│   │   └─ Messagerie familiale
-
-│   ├── 📊 Statistiques.js / Statistiques.css
-
-│   │   └─ Analyses et graphiques
-
-│   ├── 🔔 Notifications.js
-
-│   │   └─ Notifications familiales + badge
-
-│   ├── 📄 RapportPDF.js
-
-│   │   └─ Export PDF complet (jsPDF)
-
-│   └── ⚙️ index.js / index.css
-
-└── public/
-
-├── logo.png
-
-└── logo-adn.svg
 
 ---
 
@@ -250,12 +112,57 @@ Yekeni/
 | Technologie | Version | Usage |
 |---|---|---|
 | **React.js** | 18.x | Framework frontend |
+| **Supabase** | — | Backend, BDD PostgreSQL, Auth |
+| **Vercel** | — | Déploiement et hébergement |
 | **Leaflet + React-Leaflet** | 4.x | Carte interactive |
 | **Recharts** | 2.x | Graphiques |
 | **jsPDF + jspdf-autotable** | 2.x | Génération de rapports PDF |
 | **Claude AI (Anthropic)** | Sonnet | Biographies IA |
-| **localStorage** | — | Persistance locale |
-| **CSS** | — | Design custom |
+
+---
+
+## 🗄️ Architecture Base de Données (Supabase)
+
+```
+profils        → Comptes utilisateurs et rôles (admin/modérateur/membre/invité)
+membres        → Individus de l'arbre généalogique
+arbre          → Relations entre membres (parent/enfant/conjoint/fratrie)
+racines        → Origines ethniques et régionales
+evenements     → Événements familiaux (naissances, mariages, etc.)
+notifications  → Système de notifications internes
+```
+
+Sécurité : **Row Level Security (RLS)** activée sur toutes les tables — seuls les membres validés par un admin peuvent accéder aux données.
+
+---
+
+## 🚀 Installation & Démarrage
+
+### Prérequis
+- [Node.js](https://nodejs.org/) >= 16
+- npm >= 8
+- Un compte [Supabase](https://supabase.com)
+
+### Étapes
+
+```bash
+# 1. Cloner le projet
+git clone https://github.com/gningueantou-sys/Y-k-ni.git
+cd Y-k-ni
+
+# 2. Installer les dépendances
+npm install
+
+# 3. Configurer les variables d'environnement
+# Crée un fichier .env à la racine avec :
+REACT_APP_SUPABASE_URL=ton_project_url
+REACT_APP_SUPABASE_ANON_KEY=ta_anon_key
+
+# 4. Lancer en développement
+npm start
+```
+
+✅ L'application s'ouvre automatiquement sur [http://localhost:3000](http://localhost:3000)
 
 ---
 
@@ -270,31 +177,30 @@ Yekeni/
 
 ---
 
-## 🗺️ Roadmap (6-12 mois)
+## 🗺️ Roadmap
 
-### Phase 1 : Stabilité (Juillet - Septembre 2025)
-- [x] Rapport PDF complet (membres, racines, événements, arbre)
+### Phase 1 : MVP ✅ (Juin 2025)
+- [x] Arbre généalogique interactif
 - [x] Système de gouvernance (Admin/Co-Admin/Transfert)
 - [x] Notifications familiales
-- [x] Visibilité des données (Public/Famille/Privé)
-- [ ] Sauvegarde cloud optionnelle (avec chiffrement) — **Supabase en cours**
-- [ ] Tests utilisateurs avec familles sénégalaises
+- [x] Rapport PDF complet
+- [x] Biographies générées par IA
 
-### Phase 2 : Expansion (Octobre - Décembre 2025)
-- [ ] Synchronisation multi-appareils
+### Phase 2 : Backend ✅ (Juillet 2025)
+- [x] Migration vers Supabase (auth, membres, racines, événements)
+- [x] Row Level Security (RLS)
+- [x] Déploiement sur Vercel
+- [x] Authentification réelle (email/mot de passe)
+
+### Phase 3 : Expansion (2025-2026)
+- [ ] Synchronisation complète de l'arbre généalogique
 - [ ] Application mobile (React Native)
-- [ ] Mode hors ligne amélioré
-
-### Phase 3 : IA & Avancé (2026)
-- [ ] Reconnaissance faciale simple
-- [ ] Recommandations de liens familiaux
+- [ ] Reconnaissance faciale
 - [ ] Intégration données ADN (optionnelle)
 
 ---
 
 ## 🏆 Hackathons & Compétitions
-
-Ce projet cible :
 
 | Compétition | Thème | Pertinence |
 |---|---|---|
@@ -305,30 +211,12 @@ Ce projet cible :
 
 ---
 
-## 🤝 Contribuer
-
-Les contributions sont les bienvenues ! Pour contribuer :
-
-1. Fork le projet
-2. Créez une branche (`git checkout -b feature/AmazingFeature`)
-3. Committez vos changements (`git commit -m 'Add some AmazingFeature'`)
-4. Poussez vers la branche (`git push origin feature/AmazingFeature`)
-5. Ouvrez une Pull Request
-
-### Besoin d'aide ?
-- 📖 **Documentation** : À venir
-- 💬 **Questions** : Ouvrez une issue
-- 🐛 **Bugs** : Signalez via GitHub Issues
-
----
-
 ## 👨‍💻 Développeur
 
 **Pape Antou Gningue**
 - 🎓 Étudiant en L1 Informatique
 - 📍 Dakar, Sénégal
 - 🌐 GitHub : [@gningueantou-sys](https://github.com/gningueantou-sys)
-- 📧 Contactez-moi pour les partenariats ou questions
 
 ---
 
@@ -341,6 +229,7 @@ Ce projet est sous licence **MIT** — voir le fichier [LICENSE](LICENSE) pour p
 ## 🙏 Remerciements
 
 - Anthropic pour Claude Sonnet (biographies IA)
+- Supabase pour le backend open source
 - React community pour les outils extraordinaires
 - Les familles sénégalaises qui testent et donnent des retours
 
