@@ -1,4 +1,4 @@
-#  Yëkëni — African Family Genealogy Platform
+# Yëkëni — Plateforme de Généalogie Familiale Africaine
 
 <p align="center">
 <img src="public/logo.png" alt="Yëkëni Logo" width="180"/>
@@ -13,9 +13,6 @@
   <img src="https://img.shields.io/badge/Supabase-Backend-3ECF8E?logo=supabase&logoColor=white" />
   <img src="https://img.shields.io/badge/Vercel-Deployed-black?logo=vercel&logoColor=white" />
   <img src="https://img.shields.io/badge/License-MIT-2D6A4F?logo=opensourceinitiative&logoColor=white" />
-  <img src="https://img.shields.io/badge/Status-Beta-blue" />
-  <img src="https://img.shields.io/badge/IA-Claude%20Anthropic-blueviolet" />
-  <img src="https://img.shields.io/badge/Langues-FR%20%7C%20WO%20%7C%20FUL%20%7C%20SRR-brightgreen" />
   <img src="https://img.shields.io/badge/Made%20in-Sénégal%20🇸🇳-green" />
 </p>
 
@@ -23,219 +20,149 @@
 
 ---
 
-## 📌 Contexte & Problématique
+## Pourquoi ce projet ?
 
-En Afrique, des millions de familles perdent chaque jour une partie de leur histoire. Les plateformes de généalogie étrangères comme **Ancestry.com** ou **23andMe** collectent et monétisent les données ADN et familiales des Africains sans consentement réel.
+En Afrique de l'Ouest, la famille est au centre de tout. Une seule famille peut regrouper plusieurs dizaines de membres répartis entre Dakar, Paris, New York et Conakry. Cette dispersion crée des problèmes concrets que j'ai voulu adresser :
 
-> *"Ancestry.com connaît mieux la généalogie africaine que les Africains eux-mêmes — Yëkëni est là pour changer ça."*
+* Les enfants de la diaspora grandissent sans connaître leurs cousins, leurs ancêtres, leur village d'origine
+* Les traditions orales et les histoires familiales disparaissent avec les anciens
+* Personne ne sait qui est allergique à quoi, ou quel groupe sanguin a tel membre de la famille en cas d'urgence
+* Les structures familiales africaines sont complexes (polygamie, familles élargies) et les outils existants comme Ancestry.com ne sont pas adaptés
 
-**Yëkëni** (mot Wolof signifiant **"se reconnaître"**) propose une alternative **souveraine, locale et culturellement adaptée** à la réalité africaine.
+J'ai créé Yëkëni — qui signifie "se reconnaître" en Wolof — pour donner aux familles africaines un outil qui leur ressemble vraiment.
 
 ---
 
-## 🎯 Ce que Yëkëni résout
+## Ce que permet Yëkëni
 
-| Problème | Solution Yëkëni |
+### Arbre généalogique interactif
+Construire et naviguer dans l'arbre de sa famille sur plusieurs générations. On peut ajouter père, mère, frères, sœurs, enfants et conjoints, uploader des photos, et même générer automatiquement une biographie pour chaque membre grâce à l'IA.
+
+### Mes Racines
+Documenter les origines culturelles de chaque ancêtre :
+* **Origines** — village, région, pays d'origine
+* **Ethnies & Langues** — composition ethnique de la famille (Peul, Wolof, Sérère...) et langues parlées
+* **Voix des anciens** — espace pour enregistrer et préserver les témoignages oraux
+
+### Membres
+Un profil complet pour chaque membre de la famille avec ses informations personnelles et ses données de santé (groupe sanguin, allergies, maladies héréditaires).
+
+### Mémoire familiale
+Garder une trace des souvenirs importants (mariages, naissances, diplômes...), des traditions et de l'histoire de la famille. Avec une timeline interactive et un système de likes.
+
+### Événements
+Un calendrier des événements familiaux avec des alertes automatiques quand une date approche.
+
+### Autres fonctionnalités
+* Carte mondiale pour voir où vivent les membres de la famille
+* Chat familial pour rester connecté
+* Fiches santé avec compatibilité sanguine
+* Statistiques familiales
+* Export PDF complet
+* Notifications familiales
+* Système de gouvernance (Admin, Co-Admin, Membre, Invité)
+
+---
+
+## Stack technique
+
+| Technologie | Usage |
 |---|---|
-| 🕵️ Espionnage culturel par plateformes étrangères | **Données sécurisées** sur Supabase avec RLS (Row Level Security) |
-| 🌍 Déracinement des Africains de la diaspora | Section **"Mes Racines"** avec villages, ethnies, langues |
-| 📖 Disparition des traditions orales | **Mémoire familiale** interactive avec histoires et traditions |
-| 🗣️ Barrière linguistique | Support **Français, Wolof, Pulaar, Sérère** |
-| 🩺 Perte des données médicales familiales | **Fiche santé** par membre (groupe sanguin, allergies, antécédents) |
+| React.js | Frontend |
+| Supabase | Base de données PostgreSQL + Authentification |
+| Vercel | Hébergement |
+| Leaflet | Carte interactive |
+| Recharts | Graphiques |
+| jsPDF | Export PDF |
+| Claude API (Anthropic) | Génération de biographies |
 
 ---
 
-## ✨ Fonctionnalités Actuelles (MVP)
-
-### 🌳 Arbre Généalogique Interactif
-- ✅ Navigation interactive entre membres (père → grand-père → arrière-grand-père...)
-- ✅ Ajout de relations : père, mère, frères, sœurs, enfants, conjoint
-- ✅ Modification et suppression de membres
-- ✅ Upload de photos de profil
-- ✅ Fil d'Ariane pour se repérer
-- ✅ Recherche par nom
-- ✅ **Biographies générées par IA** (Claude Anthropic)
-
-### 🌍 Mes Racines
-- ✅ Origine ethnique (Peul, Wolof, Sérère, Mandingue, Diola...)
-- ✅ Village et région d'origine
-- ✅ Langues parlées
-- ✅ Visualisation des ethnies et langues de la famille
-- ✅ **Sauvegardé sur Supabase** — accessible depuis tous les appareils
-
-### 👥 Gestion des Membres
-- ✅ Informations personnelles : nom, profession, ville, pays
-- ✅ Données de santé : groupe sanguin, allergies, maladies héréditaires
-- ✅ **Sauvegardé sur Supabase** — partagé avec toute la famille
-
-### 📸 Mémoire Familiale
-- ✅ Souvenirs avec catégories (mariage, naissance, diplôme...)
-- ✅ Traditions culturelles et religieuses
-- ✅ Timeline interactive
-- ✅ Système de likes
-
-### 🎂 Événements Familiaux
-- ✅ Calendrier interactif avec icônes personnalisées
-- ✅ Alertes automatiques (rouge si moins de 7 jours)
-- ✅ **Sauvegardé sur Supabase** — visible par toute la famille
-
-### 👑 Système de Gouvernance Familiale
-- ✅ **Admin principal** — chef de famille avec tous les droits
-- ✅ **Co-Admins** (max 2) — gèrent la famille en cas d'absence de l'Admin
-- ✅ **Transfert d'Admin** — avec confirmation
-- ✅ **Membres** — accès standard
-- ✅ **Invités** — accès limité en lecture seule
-
-### 🔔 Notifications Familiales
-- ✅ Alertes pour les activités familiales
-- ✅ Badge de notifications non lues
-- ✅ Panneau latéral animé
-
-### 📄 Rapport Familial PDF
-- ✅ Export PDF professionnel complet (5 pages)
-- ✅ Page de couverture avec statistiques
-- ✅ Liste des membres avec alertes santé
-
-### Autres Fonctionnalités
-| Fonctionnalité | Statut |
-|---|---|
-| 🗺️ Carte mondiale des membres | ✅ Actif |
-| 📊 Statistiques familiales | ✅ Actif |
-| 🔐 Authentification Supabase | ✅ Actif |
-| 🩺 Historique médical familial | ✅ Actif |
-| 📄 Rapport PDF complet | ✅ Actif |
-
----
-
-## 🛠️ Stack Technique
-
-| Technologie | Version | Usage |
-|---|---|---|
-| **React.js** | 18.x | Framework frontend |
-| **Supabase** | — | Backend, BDD PostgreSQL, Auth |
-| **Vercel** | — | Déploiement et hébergement |
-| **Leaflet + React-Leaflet** | 4.x | Carte interactive |
-| **Recharts** | 2.x | Graphiques |
-| **jsPDF + jspdf-autotable** | 2.x | Génération de rapports PDF |
-| **Claude AI (Anthropic)** | Sonnet | Biographies IA |
-
----
-
-## 🗄️ Architecture Base de Données (Supabase)
+## Base de données (Supabase)
 
 ```
-profils        → Comptes utilisateurs et rôles (admin/modérateur/membre/invité)
-membres        → Individus de l'arbre généalogique
-arbre          → Relations entre membres (parent/enfant/conjoint/fratrie)
-racines        → Origines ethniques et régionales
-evenements     → Événements familiaux (naissances, mariages, etc.)
-notifications  → Système de notifications internes
+profils       → comptes utilisateurs et rôles
+membres       → individus de l'arbre généalogique
+arbre         → relations entre membres
+racines       → origines ethniques et régionales
+evenements    → événements familiaux
+notifications → notifications internes
 ```
 
-Sécurité : **Row Level Security (RLS)** activée sur toutes les tables — seuls les membres validés par un admin peuvent accéder aux données.
+Row Level Security activée sur toutes les tables.
 
 ---
 
-## 🚀 Installation & Démarrage
+## Structure du projet
 
-### Prérequis
-- [Node.js](https://nodejs.org/) >= 16
-- npm >= 8
-- Un compte [Supabase](https://supabase.com)
+```
+src/
+├── App.js            → Page d'accueil publique
+├── Auth.js           → Connexion et inscription (Supabase)
+├── Dashboard.js      → Tableau de bord principal
+├── ArbreAnime.js     → Arbre généalogique interactif
+├── Membres.js        → Gestion des profils membres
+├── Racines.js        → Origines / Ethnies & Langues / Voix des anciens
+├── Memoire.js        → Souvenirs / Traditions / Histoire familiale
+├── Sante.js          → Fiches santé / Compatibilité sanguine / Urgences
+├── Carte.js          → Carte mondiale des membres
+├── Chat.js           → Messagerie familiale
+├── Statistiques.js   → Graphiques et analyses
+├── Notifications.js  → Panneau de notifications
+├── Famille.js        → Création de famille + code QR
+├── Loader.js         → Animation de chargement
+└── supabaseClient.js → Connexion à Supabase
+```
 
-### Étapes
+---
+
+## Installation
 
 ```bash
-# 1. Cloner le projet
 git clone https://github.com/gningueantou-sys/Y-k-ni.git
 cd Y-k-ni
-
-# 2. Installer les dépendances
 npm install
+```
 
-# 3. Configurer les variables d'environnement
-# Crée un fichier .env à la racine avec :
-REACT_APP_SUPABASE_URL=ton_project_url
-REACT_APP_SUPABASE_ANON_KEY=ta_anon_key
+Crée un fichier `.env` à la racine :
+```
+REACT_APP_SUPABASE_URL=ton_url_supabase
+REACT_APP_SUPABASE_ANON_KEY=ta_clé_anon
+```
 
-# 4. Lancer en développement
+```bash
 npm start
 ```
 
-✅ L'application s'ouvre automatiquement sur [http://localhost:3000](http://localhost:3000)
+---
+
+## Objectifs du projet
+
+* Créer une application web complète et fonctionnelle de généalogie familiale
+* Adapter l'outil aux réalités des familles africaines (familles élargies, polygamie, diaspora)
+* Préserver la mémoire et les traditions culturelles africaines
+* Faciliter la communication entre membres de la famille dispersés dans le monde
+* Documenter les données de santé familiale de manière sécurisée
 
 ---
 
-## 🌍 Langues Supportées
+## Langues supportées
 
-| Langue | Code | Statut |
-|---|---|---|
-| 🇫🇷 Français | `fr` | ✅ Complet |
-| 🇸🇳 Wolof | `wo` | ✅ Interface |
-| 🇸🇳 Pulaar | `ful` | 🔄 En cours |
-| 🇸🇳 Sérère | `srr` | 🔄 En cours |
+Français, Wolof — Pulaar et Sérère en cours d'intégration.
 
 ---
 
-## 🗺️ Roadmap
+## Développeur
 
-### Phase 1 : MVP ✅ (Juin 2025)
-- [x] Arbre généalogique interactif
-- [x] Système de gouvernance (Admin/Co-Admin/Transfert)
-- [x] Notifications familiales
-- [x] Rapport PDF complet
-- [x] Biographies générées par IA
-
-### Phase 2 : Backend ✅ (Juillet 2025)
-- [x] Migration vers Supabase (auth, membres, racines, événements)
-- [x] Row Level Security (RLS)
-- [x] Déploiement sur Vercel
-- [x] Authentification réelle (email/mot de passe)
-
-### Phase 3 : Expansion (2025-2026)
-- [ ] Synchronisation complète de l'arbre généalogique
-- [ ] Application mobile (React Native)
-- [ ] Reconnaissance faciale
-- [ ] Intégration données ADN (optionnelle)
+**Pape Antou Gningue** — Étudiant en L1 Informatique, Dakar, Sénégal  
+GitHub : [@gningueantou-sys](https://github.com/gningueantou-sys)
 
 ---
 
-## 🏆 Hackathons & Compétitions
+## Remerciements
 
-| Compétition | Thème | Pertinence |
-|---|---|---|
-| 🏅 **AIMS Senegal Hackathon** | Innovation scientifique africaine | ⭐⭐⭐⭐⭐ |
-| 🏅 **Hackathon iSAFE** | Souveraineté numérique & IA | ⭐⭐⭐⭐⭐ |
-| 🏅 **ID4Africa Hackathon** | Identité numérique africaine | ⭐⭐⭐⭐⭐ |
-| 🏅 **Orange Social Venture Prize** | Impact social en Afrique | ⭐⭐⭐⭐ |
+Merci aux familles sénégalaises qui ont testé et donné des retours, à la communauté React, et à Supabase pour leur backend open source.
 
 ---
 
-## 👨‍💻 Développeur
-
-**Pape Antou Gningue**
-- 🎓 Étudiant en L1 Informatique
-- 📍 Dakar, Sénégal
-- 🌐 GitHub : [@gningueantou-sys](https://github.com/gningueantou-sys)
-
----
-
-## 📄 Licence
-
-Ce projet est sous licence **MIT** — voir le fichier [LICENSE](LICENSE) pour plus de détails.
-
----
-
-## 🙏 Remerciements
-
-- Anthropic pour Claude Sonnet (biographies IA)
-- Supabase pour le backend open source
-- React community pour les outils extraordinaires
-- Les familles sénégalaises qui testent et donnent des retours
-
----
-
-<p align="center">
-  <strong>Fait avec ❤️ au Sénégal · © 2025 Yëkëni</strong><br/>
-  <em>Préservons ensemble l'héritage culturel africain</em>
-</p>
+*Fait avec ❤️ au Sénégal · © 2025 Yëkëni*
