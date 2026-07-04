@@ -20,9 +20,25 @@
 
 <p align="center">
   🚀 <strong><a href="https://yekeni.vercel.app">Découvrez l'application</a></strong> · 
-  📖 <strong><a href="#-démo--tutoriel">Voir la Démo</a></strong> ·
+  📖 <strong><a href="#-démarrage-rapide">Démarrer</a></strong> ·
   🐛 <strong><a href="#-faq--troubleshooting">FAQ & Support</a></strong>
 </p>
+
+---
+
+## ⚡ Démarrage Rapide
+
+**Lancez Yëkëni en 5 minutes !**
+
+| Étape | Action | Temps |
+|---|---|---|
+| **1** | `git clone https://github.com/gningueantou-sys/Yekeni.git` | 30s |
+| **2** | `cd Yekeni && npm install` | 2 min |
+| **3** | `cp .env.example .env` + remplir credentials Supabase | 1 min |
+| **4** | `npm start` | 30s |
+| **✅** | Ouvrir http://localhost:3000 | - |
+
+**Pas de Supabase ?** → [Créer gratuitement en 2 min](https://supabase.com)
 
 ---
 
@@ -370,7 +386,7 @@ Yekeni/
    ├── id (PK)
    ├── family_id
    ├── type, date, description
-   └── ...
+   └��─ ...
 
 🏥 sante
    ├── member_id (FK)
