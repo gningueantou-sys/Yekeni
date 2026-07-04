@@ -14,8 +14,6 @@
   <img src="https://img.shields.io/badge/Supabase-Backend-3ECF8E?logo=supabase&logoColor=white&style=flat-square" />
   <img src="https://img.shields.io/badge/Vercel-Deployed-black?logo=vercel&logoColor=white&style=flat-square" />
   <img src="https://img.shields.io/badge/License-MIT-2D6A4F?logo=opensourceinitiative&logoColor=white&style=flat-square" />
-  <img src="https://img.shields.io/badge/Status-MVP%20Live-brightgreen?style=flat-square" />
-  <img src="https://img.shields.io/badge/IA-Claude%20Sonnet-blueviolet?style=flat-square" />
   <img src="https://img.shields.io/badge/Langues-FR%20%7C%20WO%20%7C%20FUL-brightgreen?style=flat-square" />
   <img src="https://img.shields.io/badge/Made%20in-Sénégal%20🇸🇳-green?style=flat-square" />
 </p>
@@ -28,7 +26,7 @@
 
 ## 🎯 Pourquoi Yëkëni existe
 
-En Afrique de l'Ouest, une famille peut regrouper 50 à 100 membres répartis entre Dakar, Paris, New York et Conakry. Cette dispersion crée des problèmes concrets que les outils existants ne résolvent pas.
+En Afrique de l'Ouest, une famille peut regrouper 50 à 100 membres répartis entre Dakar, Paris, New York et Conakry. Cette dispersion crée des problèmes concrets que les outils existants ne résol[...]
 
 ### Les problèmes & ce que Yëkëni fait
 
@@ -49,7 +47,7 @@ En cas d'urgence, personne ne sait quel groupe sanguin a tel membre, s'il est al
 → *Yëkëni génère une fiche santé pour chaque membre avec groupe sanguin, allergies, maladies héréditaires et compatibilité sanguine automatique.*
 
 **🏢 Les outils existants ne sont pas faits pour les familles africaines**
-Ancestry.com et 23andMe sont conçus pour des familles nucléaires occidentales de 3 à 5 personnes. Ils ne gèrent pas la polygamie, les familles élargies, et collectent les données génétiques africaines à des fins commerciales.
+Ancestry.com et 23andMe sont conçus pour des familles nucléaires occidentales de 3 à 5 personnes. Ils ne gèrent pas la polygamie, les familles élargies, et collectent les données génétiques af[...]
 → *Yëkëni est construit spécifiquement pour les structures familiales africaines complexes, avec des données sécurisées par Row Level Security sur Supabase.*
 
 **👑 La hiérarchie familiale africaine n'existe nulle part en numérique**
