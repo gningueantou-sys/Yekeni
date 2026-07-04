@@ -14,8 +14,6 @@
   <img src="https://img.shields.io/badge/Supabase-Backend-3ECF8E?logo=supabase&logoColor=white&style=flat-square" />
   <img src="https://img.shields.io/badge/Vercel-Deployed-black?logo=vercel&logoColor=white&style=flat-square" />
   <img src="https://img.shields.io/badge/License-MIT-2D6A4F?logo=opensourceinitiative&logoColor=white&style=flat-square" />
-  <img src="https://img.shields.io/badge/Status-MVP%20Live-brightgreen?style=flat-square" />
-  <img src="https://img.shields.io/badge/IA-Claude%20Sonnet-blueviolet?style=flat-square" />
   <img src="https://img.shields.io/badge/Langues-FR%20%7C%20WO%20%7C%20FUL-brightgreen?style=flat-square" />
   <img src="https://img.shields.io/badge/Made%20in-Sénégal%20🇸🇳-green?style=flat-square" />
 </p>
@@ -63,7 +61,7 @@
 
 ## 🎯 Pourquoi Yëkëni existe
 
-En Afrique de l'Ouest, une famille peut regrouper 50 à 100 membres répartis entre Dakar, Paris, New York et Conakry. Cette dispersion crée des problèmes concrets que les outils existants ne résolvent pas.
+En Afrique de l'Ouest, une famille peut regrouper 50 à 100 membres répartis entre Dakar, Paris, New York et Conakry. Cette dispersion crée des problèmes concrets que les outils existants ne r�[...]
 
 ### Les problèmes & ce que Yëkëni fait
 
@@ -347,8 +345,7 @@ npm start
 ### 📋 Fichier `.env.example`
 
 ```bash
-# ===== SUPABASE =====
-REACT_APP_SUPABASE_URL=https://your-project.supabase.co
+# ===== SUPABASE =====nREACT_APP_SUPABASE_URL=https://your-project.supabase.co
 REACT_APP_SUPABASE_ANON_KEY=your-anon-key
 
 # ===== CLAUDE API (Optional) =====
