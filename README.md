@@ -26,21 +26,39 @@
 
 ---
 
-## 🎯 Le Problème & La Solution
+## 🎯 Pourquoi Yëkëni existe
 
-### La Réalité Africaine
-- 📍 **70+ millions** de membres de la diaspora africaine dispersés
-- 👥 **Familles élargies** : 50-100+ membres (vs 2-3 en Occident)
-- 🗣️ **Traditions orales** : risque de disparition avec les aînés
-- ⚠️ **Données médicales perdues** : pas de continuité familiale
-- 🏢 **Monopole occidental** : Ancestry.com collecte les données génétiques africaines
+En Afrique de l'Ouest, une famille peut regrouper 50 à 100 membres répartis entre Dakar, Paris, New York et Conakry. Cette dispersion crée des problèmes concrets que les outils existants ne résolvent pas.
 
-### Yëkëni : La Réponse
-Une plateforme **souveraine, open-source, culturellement adaptée** :
-- ✅ **Données sécurisées** — Row Level Security sur Supabase
-- ✅ **Structures complexes** — polygamie, familles élargies, adoption
-- ✅ **Multilinguisme** — Français, Wolof, Pulaar, Sérère
-- ✅ **Préservation culturelle** — enregistrements vocaux, traditions, villages d'origine
+### Les problèmes & ce que Yëkëni fait
+
+**🔗 Les liens familiaux se perdent dans la diaspora**
+Les enfants nés en France ou aux USA grandissent sans connaître leurs cousins, leurs oncles, leurs ancêtres. La distance efface les liens.
+→ *Yëkëni propose un arbre généalogique interactif partagé en temps réel, accessible depuis n'importe quel appareil dans le monde.*
+
+**🗣️ La mémoire orale disparaît avec les anciens**
+En Afrique, l'histoire familiale se transmet oralement. Quand un ancien décède, ses récits, ses savoirs et ses traditions disparaissent avec lui.
+→ *Yëkëni permet de documenter souvenirs, traditions et témoignages dans une section Mémoire familiale et Voix des anciens.*
+
+**🌍 Les enfants de la diaspora ne connaissent pas leurs racines**
+Né à Bordeaux ou à Montréal, un enfant sénégalais peut ignorer son ethnie, son village d'origine, ou même les langues de ses grands-parents.
+→ *La section Mes Racines documente l'ethnie, le village, la région et les langues de chaque ancêtre, avec des visualisations graphiques.*
+
+**🩺 L'historique médical familial est souvent inconnu**
+En cas d'urgence, personne ne sait quel groupe sanguin a tel membre, s'il est allergique à la pénicilline, ou si la drépanocytose est présente dans la lignée.
+→ *Yëkëni génère une fiche santé pour chaque membre avec groupe sanguin, allergies, maladies héréditaires et compatibilité sanguine automatique.*
+
+**🏢 Les outils existants ne sont pas faits pour les familles africaines**
+Ancestry.com et 23andMe sont conçus pour des familles nucléaires occidentales de 3 à 5 personnes. Ils ne gèrent pas la polygamie, les familles élargies, et collectent les données génétiques africaines à des fins commerciales.
+→ *Yëkëni est construit spécifiquement pour les structures familiales africaines complexes, avec des données sécurisées par Row Level Security sur Supabase.*
+
+**👑 La hiérarchie familiale africaine n'existe nulle part en numérique**
+Dans la culture africaine, il y a toujours un chef de famille, des responsables. Aucune application ne reflétait cette réalité.
+→ *Yëkëni intègre un système de gouvernance Admin / Co-Admin / Membre / Invité, avec transfert de rôle sécurisé.*
+
+**📅 Les événements familiaux s'oublient dans la distance**
+Quand la famille est sur 3 continents, les anniversaires, mariages et baptêmes des membres éloignés passent souvent inaperçus.
+→ *Un calendrier familial avec alertes automatiques rappelle chaque événement 7 jours à l'avance.*
 
 ---
 
@@ -368,8 +386,7 @@ npm run test:families
 - 🎓 L1 Informatique (Université Dakar)
 - 📍 Dakar, Sénégal
 - 🔗 GitHub : [@gningueantou-sys](https://github.com/gningueantou-sys)
-- 💬 Telegram : @pape_antou
-- 📧 Email : pape.antou@example.com
+- 📧 Email : gningueantou@gmail.com
 
 ---
 
