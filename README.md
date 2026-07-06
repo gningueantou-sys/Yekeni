@@ -75,7 +75,7 @@ Quand la famille est sur 3 continents, les anniversaires et mariages des membres
 ### 🌳 Arbre Généalogique Interactif
 - Navigation fluide entre générations
 - Relations multiples : père, mère, frères, sœurs, enfants, conjoints
-- Upload de photos de profil
+- Ajout de photos de profil
 - **Biographies générées par IA** (Claude Sonnet)
 - Recherche rapide par nom
 
