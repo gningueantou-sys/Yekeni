@@ -232,7 +232,7 @@ const response = await fetch('https://api.anthropic.com/v1/messages', {
     max_tokens: 500,
     messages: [{
       role: 'user',
-      content: `Écris une biographie courte pour ${membre.prenom} ${membre.nom},
+      content: `Écris une biographie courte pour ${membre.prenom} ${membre.nom}, 
       originaire de ${membre.ville}, profession : ${membre.profession}.
       Contexte : famille africaine.`
     }]
@@ -282,7 +282,7 @@ function getCompatibleTypes(bloodType) {
 ### 🔄 Phase 2 — Expansion
 - [ ] Application mobile (React Native)
 - [ ] Synchronisation arbre complète
-- [ ] Chat avec notifications push en temps réel
+- [ ] Chat temps réel
 
 ### 🌟 Phase 3 — IA Avancée
 - [ ] Chatbot généalogique
@@ -297,7 +297,7 @@ function getCompatibleTypes(bloodType) {
 Oui. Row Level Security est activée sur toutes les tables Supabase. Seuls les membres validés par un admin peuvent accéder aux données.
 
 **Q : L'app fonctionne-t-elle sans connexion ?**
-Non. L'application nécessite une connexion internet pour se connecter à Supabase et accéder aux données familiales.
+Partiellement. L'arbre et les données locales fonctionnent hors ligne, mais la synchronisation Supabase nécessite une connexion.
 
 **Q : Comment rejoindre une famille existante ?**
 Via le code famille unique généré à la création, ou en demandant à l'admin de vous inviter.
