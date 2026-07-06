@@ -14,11 +14,11 @@ function App() {
 
   useEffect(() => {
     // Vérifie si l'utilisateur est déjà connecté au chargement
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      if (session) setPage('dashboard');
-      setChargement(false);
-    });
+   supabase.auth.getSession().then(({ data: { session } }) => {
+  setSession(session);
+  if (session) setPage('dashboard');
+  setTimeout(() => setChargement(false), 2000);
+});
 
     // Écoute les changements de session (connexion / déconnexion)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
