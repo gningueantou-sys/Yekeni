@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './Membres.css';
-
+import { supabase } from './supabaseClient';
 const STORAGE_KEY = 'yekeni_membres';
 
 const membresInitiaux = [
@@ -34,6 +34,10 @@ export default function Membres() {
     nom:'', prenom:'', role:'Membre', sang:'Inconnu', avatar:'👤',
     ville:'', pays:'', profession:'', telephone:'', maladie:'Aucune', allergie:'Aucune'
   });
+  const [familleCode, setFamilleCode] = useState(null);
+const [monRole, setMonRole] = useState(null);
+const [showInvite, setShowInvite] = useState(false);
+const [copie, setCopie] = useState(false);
 
   useEffect(()=>{ try { localStorage.setItem(STORAGE_KEY, JSON.stringify(membres)); } catch(e){} }, [membres]);
 
@@ -44,6 +48,36 @@ export default function Membres() {
     m.ville.toLowerCase().includes(recherche.toLowerCase()) ||
     m.pays.toLowerCase().includes(recherche.toLowerCase())
   );
+const [debugError, setDebugError] = useState(null);
+
+useEffect(() => {
+  async function chargerFamille() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { setDebugError('pas d\'utilisateur'); return; }
+
+    const { data: profil, error: err1 } = await supabase
+      .from('profils')
+      .select('role, famille_id')
+      .eq('id', user.id)
+      .single();
+
+    if (err1) { setDebugError('erreur profil: ' + JSON.stringify(err1)); return; }
+    if (!profil) { setDebugError('profil vide'); return; }
+
+    setMonRole(profil.role);
+
+    if (profil.famille_id) {
+      const { data: famille, error: err2 } = await supabase
+        .from('familles')
+        .select('code_invitation')
+        .eq('id', profil.famille_id)
+        .single();
+      if (err2) { setDebugError('erreur famille: ' + JSON.stringify(err2)); return; }
+      if (famille) setFamilleCode(famille.code_invitation);
+    }
+  }
+  chargerFamille();
+}, []);
 
   const ajouterMembre = () => {
     if (!nouveau.nom) return;
@@ -124,7 +158,10 @@ export default function Membres() {
           <span>👥 {membres.length} membres</span>
           <span>🌍 {[...new Set(membres.map(m=>m.pays))].length} pays</span>
         </div>
-        <button className="btn-nouveau" onClick={()=>setShowForm(true)}>+ Nouveau membre</button>
+       {(monRole === 'admin' || monRole === 'co-admin') && (
+  <button className="btn-nouveau" style={{background:'#E08E45'}} onClick={()=>setShowInvite(true)}>🔗 Inviter un membre</button>
+)}
+<button className="btn-nouveau" onClick={()=>setShowForm(true)}>+ Nouveau membre</button>
       </div>
 
       <div className="membres-layout">
@@ -353,6 +390,32 @@ export default function Membres() {
           </div>
         </div>
       )}
+      {showInvite && (
+  <div className="form-overlay" onClick={()=>setShowInvite(false)}>
+    <div className="confirm-modal" onClick={e=>e.stopPropagation()}>
+      <span style={{fontSize:'2.5rem'}}>🔗</span>
+      <h3>Inviter un membre de la famille</h3>
+      <p style={{color:'#888', fontSize:'.85rem'}}>Partage ce code — il permet de rejoindre directement ta famille à l'inscription.</p>
+      <div style={{
+        background:'#F0FDF4', border:'2px dashed #2D6A4F', borderRadius:'10px',
+        padding:'1rem', fontSize:'1.4rem', fontWeight:'700', letterSpacing:'2px',
+        color:'#1B4332', margin:'1rem 0'
+      }}>
+        {familleCode || 'Chargement...'}
+      </div>
+      <div className="form-buttons">
+        <button className="btn-annuler" onClick={()=>setShowInvite(false)}>Fermer</button>
+        <button className="btn-confirmer" onClick={()=>{
+          navigator.clipboard.writeText(familleCode);
+          setCopie(true);
+          setTimeout(()=>setCopie(false), 2000);
+        }}>
+          {copie ? '✅ Copié !' : '📋 Copier le code'}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 }

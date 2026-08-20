@@ -216,10 +216,10 @@ function App() {
 
       <section className="stats">
         {[
-          { val:'10K+', label:'Familles connectées' },
-          { val:'50K+', label:'Membres enregistrés' },
-          { val:'15+', label:'Pays africains' },
-          { val:'4', label:'Langues locales' },
+         { val:'10+', label:'Fonctionnalités' },
+{ val:'6', label:'Tables Supabase' },
+{ val:'4', label:'Langues locales' },
+{ val:'100%', label:'Open Source' },
         ].map((s,i) => (
           <div className="stat" key={i}>
             <h3>{s.val}</h3>

@@ -1,9 +1,36 @@
 import React, { useState } from 'react';
 import './Auth.css';
+import { supabase } from './supabaseClient';
 
 function Auth() {
   const [mode, setMode] = useState('connexion');
+  async function handleGoogleSignIn() {
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: window.location.origin,
+    },
+  });
+  if (error) {
+    console.error('Erreur connexion Google :', error.message);
+  }
+}
+const [loginEmail, setLoginEmail] = useState('');
+const [loginPassword, setLoginPassword] = useState('');
+const [loginError, setLoginError] = useState('');
 
+async function handleEmailSignIn() {
+  setLoginError('');
+  const { error } = await supabase.auth.signInWithPassword({
+    email: loginEmail,
+    password: loginPassword,
+  });
+  if (error) {
+    setLoginError('Email ou mot de passe incorrect.');
+    return;
+  }
+  window.dispatchEvent(new CustomEvent('goToDashboard'));
+}
   return (
     <div className="auth-page">
       <div className="auth-left">
@@ -48,22 +75,24 @@ function Auth() {
             <div className="auth-form">
               <h2>Bon retour ! 👋</h2>
               <p className="auth-desc">Connecte-toi pour retrouver ta famille</p>
+              <button type="button" className="btn-google" onClick={handleGoogleSignIn}>
+  <img src="/icons/google.svg" alt="" width="18" height="18" />
+  Continuer avec Google
+</button>
+<div className="divider"><span>ou</span></div>
               <div className="form-group">
-                <label>Adresse email</label>
-                <input type="email" placeholder="exemple@email.com" />
-              </div>
-              <div className="form-group">
-                <label>Mot de passe</label>
-                <input type="password" placeholder="••••••••" />
-              </div>
-              <a href="#" className="forgot">Mot de passe oublié ?</a>
-              <button className="btn-auth" onClick={() => window.dispatchEvent(new CustomEvent('goToDashboard'))}>
-                Se connecter
-              </button>
-              <div className="divider"><span>ou</span></div>
-              <button className="btn-qr" onClick={() => setMode('code')}>
-                🔑 Rejoindre avec un code famille
-              </button>
+  <label>Adresse email</label>
+  <input type="email" placeholder="exemple@email.com" value={loginEmail} onChange={e => setLoginEmail(e.target.value)} />
+</div>
+<div className="form-group">
+  <label>Mot de passe</label>
+  <input type="password" placeholder="••••••••" value={loginPassword} onChange={e => setLoginPassword(e.target.value)} />
+</div>
+{loginError && <p style={{color:'#EF5350', fontSize:'.82rem', marginTop:'-8px'}}>{loginError}</p>}
+<a href="#" className="forgot">Mot de passe oublié ?</a>
+<button className="btn-auth" onClick={handleEmailSignIn}>
+  Se connecter
+</button>
             </div>
           )}
 
