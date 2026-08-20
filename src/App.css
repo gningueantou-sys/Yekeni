@@ -658,14 +658,19 @@ body {
 }
 /* ===== FILET DE SECURITE RESPONSIVE GLOBAL ===== */
 html, body {
-  overflow-x: hidden;
-  max-width: 100vw;
+  overflow-x: hidden !important;
+  max-width: 100vw !important;
+  width: 100%;
 }
 
 @media (max-width: 768px) {
+  *:not(.sidebar-nav) {
+    flex-wrap: wrap !important;
+  }
+
   * {
-    max-width: 100%;
-    box-sizing: border-box;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
   }
 
   [class*="grid"] {
@@ -673,18 +678,15 @@ html, body {
     gap: 0.8rem !important;
   }
 
-  .content-section > div,
-  .section-block > div,
-  [class*="header"],
-  [class*="row"] {
-    flex-wrap: wrap !important;
-  }
-
   .content-section,
-  .main-content {
-    padding: 1rem !important;
+  .main-content,
+  .dashboard,
+  #root,
+  .app {
+    overflow-x: hidden !important;
     width: 100% !important;
-    overflow-x: hidden;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
   }
 
   img, svg, canvas {
