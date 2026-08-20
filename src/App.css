@@ -656,87 +656,6 @@ body {
   padding-top: 1.5rem;
   border-top: 1px solid #2D6A4F;
 }
-/* ===== RESPONSIVE MOBILE ===== */
-@media (max-width: 768px) {
-  .header {
-    padding: 1rem 1.5rem;
-    flex-wrap: wrap;
-  }
-
-  .nav {
-    display: none; /* on cachera derrière un menu hamburger plus tard si besoin */
-  }
-
-  .hero {
-    flex-direction: column;
-    padding: 3rem 1.5rem;
-    text-align: center;
-    min-height: auto;
-  }
-
-  .hero-content {
-    max-width: 100%;
-  }
-
-  .hero-title {
-    font-size: 2.2rem;
-  }
-
-  .hero-subtitle {
-    font-size: 1rem;
-    max-width: 100%;
-  }
-
-  .hero-buttons {
-    flex-direction: column;
-    width: 100%;
-  }
-
-  .btn-primary, .btn-secondary {
-    width: 100%;
-  }
-
-  .hero-visual {
-    margin-top: 2rem;
-  }
-
-  .features {
-    padding: 3rem 1.5rem;
-  }
-
-  .features-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .sante {
-    padding: 3rem 1.5rem;
-  }
-
-  .sante-content {
-    flex-direction: column;
-    gap: 2rem;
-  }
-
-  .stats {
-    flex-direction: column;
-    gap: 2rem;
-    padding: 3rem 1.5rem;
-  }
-
-  .footer {
-    padding: 2rem 1.5rem 1rem;
-  }
-
-  .footer-content {
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-
-  .footer-links {
-    flex-wrap: wrap;
-    gap: 1rem;
-  }
-}
 /* ===== FILET DE SECURITE RESPONSIVE GLOBAL ===== */
 html, body {
   overflow-x: hidden;
@@ -746,13 +665,16 @@ html, body {
 @media (max-width: 768px) {
   * {
     max-width: 100%;
+    box-sizing: border-box;
   }
 
   [class*="grid"] {
-    grid-template-columns: repeat(2, 1fr) !important;
+    grid-template-columns: 1fr !important;
     gap: 0.8rem !important;
   }
 
+  .content-section > div,
+  .section-block > div,
   [class*="header"],
   [class*="row"] {
     flex-wrap: wrap !important;
@@ -768,5 +690,9 @@ html, body {
   img, svg, canvas {
     max-width: 100%;
     height: auto;
+  }
+
+  button {
+    white-space: normal !important;
   }
 }
