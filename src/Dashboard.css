@@ -1,4 +1,68 @@
-/* ===== DASHBOARD ===== */
+
+/* ===== RESPONSIVE MOBILE DASHBOARD ===== */
+@media (max-width: 768px) {
+  .dashboard {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    position: relative;
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 0.8rem;
+  }
+
+  .sidebar-logo,
+  .sidebar-famille,
+  .langue-switcher-dashboard {
+    display: none;
+  }
+
+  .sidebar-nav {
+    flex-direction: row;
+    gap: 0.4rem;
+  }
+
+  .nav-item {
+    white-space: nowrap;
+    width: auto;
+    padding: 0.5rem 0.8rem;
+  }
+
+  .btn-deconnexion {
+    display: none;
+  }
+
+  .main-content {
+    margin-left: 0;
+    padding: 1rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .membres-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .memoire-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sante-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .content-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.8rem;
+  }
+}/* ===== DASHBOARD ===== */
 .dashboard {
   display: flex;
   min-height: 100vh;
