@@ -1,9 +1,14 @@
 import { QRCodeSVG as QRCode } from 'qrcode.react';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from './supabaseClient';
 import './Famille.css';
 
 function Famille({ onRetour }) {
   const [etape, setEtape] = useState(1);
+  const [chargement, setChargement] = useState(true);
+  const [sauvegarde, setSauvegarde] = useState(false);
+  const [familleId, setFamilleId] = useState(null);
+  const [codeGenere, setCodeGenere] = useState('');
   const [famille, setFamille] = useState({
     nom: '',
     clan: '',
@@ -12,11 +17,80 @@ function Famille({ onRetour }) {
     description: ''
   });
 
-  const codeGenere = 'YEK-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+  useEffect(() => {
+    async function charger() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { setChargement(false); return; }
+
+      const { data: profil, error: err1 } = await supabase
+        .from('profils')
+        .select('famille_id')
+        .eq('id', user.id)
+        .single();
+
+      if (err1 || !profil?.famille_id) {
+        if (err1) console.error('Erreur profil :', err1);
+        setChargement(false);
+        return;
+      }
+      setFamilleId(profil.famille_id);
+
+      const { data: f, error: err2 } = await supabase
+        .from('familles')
+        .select('*')
+        .eq('id', profil.famille_id)
+        .single();
+
+      if (err2) { console.error('Erreur famille :', err2); setChargement(false); return; }
+
+      setFamille({
+        nom: f.nom || '',
+        clan: f.clan || '',
+        pays: f.pays || '',
+        langue: f.langue || 'Français',
+        description: f.description || '',
+      });
+      setCodeGenere(f.code_invitation || '');
+      setChargement(false);
+    }
+    charger();
+  }, []);
 
   const handleChange = (e) => {
     setFamille({ ...famille, [e.target.name]: e.target.value });
   };
+
+  const passerEtape2 = async () => {
+    if (!famille.nom) return;
+    if (!familleId) { setEtape(2); return; }
+
+    setSauvegarde(true);
+    const { error } = await supabase
+      .from('familles')
+      .update({
+        nom: famille.nom,
+        clan: famille.clan || null,
+        pays: famille.pays || null,
+        langue: famille.langue,
+        description: famille.description || null,
+      })
+      .eq('id', familleId);
+    setSauvegarde(false);
+
+    if (error) {
+      alert("Erreur lors de l'enregistrement : " + error.message);
+      return;
+    }
+    setEtape(2);
+  };
+
+  if (chargement) {
+    return (
+      <div className="famille-page">
+        <div className="famille-content"><p style={{padding:'2rem'}}>⏳ Chargement...</p></div>
+      </div>
+    );
+  }
 
   return (
     <div className="famille-page">
@@ -93,8 +167,8 @@ function Famille({ onRetour }) {
               <label>Description de la famille</label>
               <textarea name="description" placeholder="Racontez l'histoire de votre famille..." value={famille.description} onChange={handleChange} rows={3} />
             </div>
-            <button className="btn-suivant" onClick={() => setEtape(2)} disabled={!famille.nom}>
-              Suivant →
+            <button className="btn-suivant" onClick={passerEtape2} disabled={!famille.nom || sauvegarde}>
+              {sauvegarde ? 'Enregistrement...' : 'Suivant →'}
             </button>
           </div>
         </div>
@@ -107,12 +181,12 @@ function Famille({ onRetour }) {
             <h2>Ton code famille secret</h2>
             <p className="famille-desc">Ce code unique permet à tes proches de rejoindre ta branche familiale. Partage-le uniquement avec les membres de ta famille.</p>
             <div className="code-display">
-              <div className="code-badge">{codeGenere}</div>
+              <div className="code-badge">{codeGenere || 'Chargement...'}</div>
               <p className="code-hint">🔒 Ce code est unique et confidentiel</p>
             </div>
             <div className="qr-placeholder">
               <div className="qr-box">
-                <QRCode value={codeGenere} size={140} bgColor="#ffffff" fgColor="#1B4332" level="H" />
+                <QRCode value={codeGenere || ''} size={140} bgColor="#ffffff" fgColor="#1B4332" level="H" />
               </div>
               <p>Tes membres peuvent scanner ce QR code pour rejoindre la famille</p>
             </div>

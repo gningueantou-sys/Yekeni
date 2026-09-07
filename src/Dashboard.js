@@ -41,6 +41,17 @@ const joursRestants = (dateStr) => {
 
 const typesEvt = ['🎂','💒','👶','🙏','🎓','🌴','🏡','🎉','💔','🏆'];
 
+// Mêmes extras locaux que Membres.js (avatar/role/sang tant qu'ils n'ont pas
+// de colonne réelle sur la table membres) — voir la note dans Membres.js
+const EXTRAS_KEY = 'yekeni_membres_extras';
+const chargerExtras = () => {
+  try {
+    const saved = localStorage.getItem(EXTRAS_KEY);
+    if (saved) return JSON.parse(saved);
+  } catch (e) {}
+  return {};
+};
+
 function Dashboard({ onRetour }) {
   const [onglet, setOnglet] = useState('accueil');
   const [showNotifs, setShowNotifs] = useState(false);
@@ -50,8 +61,12 @@ function Dashboard({ onRetour }) {
   const [fdEvt, setFdEvt] = useState({ titre:'', date:'', type:'🎂', description:'' });
   const [utilisateur, setUtilisateur] = useState(null);
 
-  // Données depuis localStorage (inchangées pour l'instant)
-  const vraisMembres = (() => { try { const s = localStorage.getItem('yekeni_membres'); return s ? JSON.parse(s) : []; } catch(e) { return []; } })();
+  // Membres : chargés depuis la vraie table Supabase (plus depuis localStorage)
+  const [vraisMembres, setVraisMembres] = useState([]);
+  const [chargementMembres, setChargementMembres] = useState(true);
+
+  // Arbre et racines : pas encore migrés vers Supabase sur cette page (fichiers non fournis) —
+  // on garde temporairement la lecture localStorage pour ces deux-là.
   const vraisArbre = (() => { try { const s = localStorage.getItem('yekeni_arbre'); return s ? JSON.parse(s).membres || [] : []; } catch(e) { return []; } })();
   const vraisRacines = (() => { try { const s = localStorage.getItem('yekeni_racines'); return s ? JSON.parse(s) : []; } catch(e) { return []; } })();
   const pays = [...new Set(vraisMembres.map(m=>m.pays).filter(Boolean))];
@@ -63,7 +78,53 @@ function Dashboard({ onRetour }) {
     supabase.auth.getUser().then(({ data: { user } }) => setUtilisateur(user));
     // Charge les événements depuis Supabase
     chargerEvenements();
+    // Charge les membres depuis Supabase
+    chargerMembresDashboard();
   }, []);
+
+  const chargerMembresDashboard = async () => {
+    setChargementMembres(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { setChargementMembres(false); return; }
+
+    const { data: profil, error: errProfil } = await supabase
+      .from('profils')
+      .select('famille_id')
+      .eq('id', user.id)
+      .single();
+
+    if (errProfil || !profil?.famille_id) {
+      if (errProfil) console.error('Erreur profil (dashboard):', errProfil);
+      setChargementMembres(false);
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from('membres')
+      .select('*')
+      .eq('famille_id', profil.famille_id)
+      .order('nom', { ascending: true });
+
+    if (error) {
+      console.error('Erreur chargement membres (dashboard):', error);
+      setChargementMembres(false);
+      return;
+    }
+
+    const extras = chargerExtras();
+    const fusionnes = (data || []).map(r => ({
+      id: r.id,
+      nom: r.nom,
+      prenom: r.prenom,
+      ville: r.ville || '',
+      pays: r.pays || '',
+      avatar: extras[r.id]?.avatar || '👤',
+      role: extras[r.id]?.role || 'Membre',
+      sang: extras[r.id]?.sang || 'Inconnu',
+    }));
+    setVraisMembres(fusionnes);
+    setChargementMembres(false);
+  };
 
   const chargerEvenements = async () => {
     setChargement(true);
@@ -222,24 +283,28 @@ function Dashboard({ onRetour }) {
                 <h2>👥 Membres de la famille</h2>
                 <button onClick={()=>setOnglet('membres')} style={{background:'none', border:'none', color:'#2D6A4F', cursor:'pointer', fontWeight:'600', fontSize:'.85rem'}}>Voir tout →</button>
               </div>
-              <div className="membres-grid">
-                {vraisMembres.slice(0,5).map((m,i)=>(
-                  <div className="membre-card" key={i} onClick={()=>setOnglet('membres')} style={{cursor:'pointer'}}>
-                    <div className="membre-avatar">{m.avatar}</div>
-                    <h4>{m.nom}</h4>
-                    <p>{m.ville}</p>
-                    <div className="membre-badges">
-                      <span className={`badge-role ${m.role?.toLowerCase()}`}>{m.role}</span>
-                      <span className="badge-sang">{m.sang}</span>
+              {chargementMembres ? (
+                <p style={{color:'#888', fontSize:'.88rem'}}>⏳ Chargement...</p>
+              ) : (
+                <div className="membres-grid">
+                  {vraisMembres.slice(0,5).map((m,i)=>(
+                    <div className="membre-card" key={i} onClick={()=>setOnglet('membres')} style={{cursor:'pointer'}}>
+                      <div className="membre-avatar">{m.avatar}</div>
+                      <h4>{m.nom}</h4>
+                      <p>{m.ville}</p>
+                      <div className="membre-badges">
+                        <span className={`badge-role ${m.role?.toLowerCase()}`}>{m.role}</span>
+                        <span className="badge-sang">{m.sang}</span>
+                      </div>
                     </div>
+                  ))}
+                  <div className="membre-card ajouter" onClick={()=>setOnglet('membres')}>
+                    <div className="membre-avatar">➕</div>
+                    <h4>Ajouter</h4>
+                    <p>un membre</p>
                   </div>
-                ))}
-                <div className="membre-card ajouter" onClick={()=>setOnglet('membres')}>
-                  <div className="membre-avatar">➕</div>
-                  <h4>Ajouter</h4>
-                  <p>un membre</p>
                 </div>
-              </div>
+              )}
             </div>
 
             <div className="section-block">

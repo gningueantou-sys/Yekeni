@@ -1,51 +1,157 @@
 import React, { useState, useEffect } from 'react';
 import './Racines.css';
+import { supabase } from './supabaseClient';
 
-const STORAGE_KEY = 'yekeni_racines';
-
-const membresDef = [
-  { id:1, nom:'Moussa Diallo', avatar:'👴', ethnie:'Peul', region:'Fouta Toro', village:'Matam', pays:'Sénégal', langues:['Pulaar','Wolof'], generation:'Grand-père', visibilite:'public' },
-  { id:2, nom:'Fatoumata Diallo', avatar:'👵', ethnie:'Wolof', region:'Casamance', village:'Ziguinchor', pays:'Sénégal', langues:['Wolof','Français'], generation:'Grand-mère', visibilite:'public' },
-  { id:3, nom:'Ibrahim Diallo', avatar:'👨', ethnie:'Peul', region:'Fouta Toro', village:'Matam', pays:'Sénégal', langues:['Pulaar'], generation:'Père', visibilite:'famille' },
-  { id:4, nom:'Aminata Diallo', avatar:'👩', ethnie:'Sérère', region:'Sine Saloum', village:'Fatick', pays:'Sénégal', langues:['Sérère','Wolof','Français'], generation:'Mère', visibilite:'prive' },
-];
-
-const chargerMembres = () => {
+const EXTRAS_KEY = 'yekeni_membres_extras';
+const chargerExtras = () => {
   try {
-    const saved = localStorage.getItem(STORAGE_KEY);
+    const saved = localStorage.getItem(EXTRAS_KEY);
     if (saved) return JSON.parse(saved);
-  } catch(e) {}
-  return membresDef;
+  } catch (e) {}
+  return {};
 };
+const sauvegarderExtras = (extras) => {
+  try { localStorage.setItem(EXTRAS_KEY, JSON.stringify(extras)); } catch (e) {}
+};
+
+const mapRow = (r, extras) => ({
+  id: r.id,
+  prenom: r.prenom || '',
+  nomSeul: r.nom || '',
+  nom: r.prenom ? `${r.prenom} ${r.nom}` : (r.nom || ''),
+  avatar: extras[r.id]?.avatar || '👤',
+  ethnie: r.ethnie || '',
+  region: r.region_origine || '',
+  village: r.village_origine || '',
+  pays: r.pays_origine || '',
+  langues: r.langues || [],
+  generation: r.generation_label || '',
+  visibilite: r.visibilite || 'famille',
+});
 
 const ethnies = ['Peul','Wolof','Sérère','Mandingue','Diola','Soninké','Bambara','Autre'];
 const langues = ['Pulaar','Wolof','Sérère','Mandinka','Diola','Soninké','Français'];
 const generations = ['Arrière-grand-père','Arrière-grand-mère','Grand-père','Grand-mère','Père','Mère','Moi','Enfant'];
+const avatars = ['👴','👵','👨','👩','🧒','👧','👦','🧔','👱','🧓'];
+
+const fdVide = { nom:'', avatar:'👤', ethnie:'Peul', region:'', village:'', pays:'Sénégal', langues:[], generation:'Moi' };
 
 export default function Racines() {
-  const [membres, setMembres] = useState(chargerMembres);
+  const [membres, setMembres] = useState([]);
+  const [chargement, setChargement] = useState(true);
+  const [familleId, setFamilleId] = useState(null);
   const [sel, setSel] = useState(null);
   const [showForm, setShowForm] = useState(false);
-  const [fd, setFd] = useState({ nom:'', avatar:'👤', ethnie:'Peul', region:'', village:'', pays:'Sénégal', langues:[], generation:'Moi', visibilite:'public' });
+  const [cible, setCible] = useState('nouveau'); // 'nouveau' ou un id de membre existant
+  const [fd, setFd] = useState(fdVide);
   const [onglet, setOnglet] = useState('carte');
   const [showAutreLangue, setShowAutreLangue] = useState(false);
   const [autreLangue, setAutreLangue] = useState('');
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(membres));
-    } catch(e) {}
-  }, [membres]);
-
-  const ajouter = () => {
-    if (!fd.nom) return;
-    setMembres([...membres, { ...fd, id: Date.now() }]);
-    setShowForm(false);
-    setFd({ nom:'', avatar:'👤', ethnie:'Peul', region:'', village:'', pays:'Sénégal', langues:[], generation:'Moi' });
+  const chargerMembres = async (fid) => {
+    const { data, error } = await supabase
+      .from('membres')
+      .select('*')
+      .eq('famille_id', fid)
+      .order('nom', { ascending: true });
+    if (error) { console.error('Erreur chargement racines :', error); return; }
+    const extras = chargerExtras();
+    setMembres((data || []).map(r => mapRow(r, extras)));
   };
 
-  const supprimer = (id) => {
-    setMembres(membres.filter(m => m.id !== id));
+  useEffect(() => {
+    async function init() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { setChargement(false); return; }
+      const { data: profil, error } = await supabase
+        .from('profils')
+        .select('famille_id')
+        .eq('id', user.id)
+        .single();
+      if (error || !profil?.famille_id) { setChargement(false); return; }
+      setFamilleId(profil.famille_id);
+      await chargerMembres(profil.famille_id);
+      setChargement(false);
+    }
+    init();
+  }, []);
+
+  const membresDocumentes = membres.filter(m => m.ethnie);
+  const membresSansOrigine = membres.filter(m => !m.ethnie);
+
+  const ouvrirForm = () => {
+    setCible('nouveau');
+    setFd(fdVide);
+    setShowForm(true);
+  };
+
+  const choisirCible = (valeur) => {
+    setCible(valeur);
+    if (valeur === 'nouveau') {
+      setFd(fdVide);
+    } else {
+      const m = membres.find(x => x.id === valeur);
+      setFd({
+        nom: m.nom,
+        avatar: m.avatar,
+        ethnie: m.ethnie || 'Peul',
+        region: m.region,
+        village: m.village,
+        pays: m.pays || 'Sénégal',
+        langues: m.langues,
+        generation: m.generation || 'Moi',
+      });
+    }
+  };
+
+  const ajouter = async () => {
+    if (!fd.nom) return;
+
+    const champsOrigine = {
+      ethnie: fd.ethnie,
+      region_origine: fd.region,
+      village_origine: fd.village,
+      pays_origine: fd.pays,
+      langues: fd.langues,
+      generation_label: fd.generation,
+      famille_id: familleId,
+    };
+
+    let idFinal = cible;
+
+    if (cible === 'nouveau') {
+      const { data, error } = await supabase
+        .from('membres')
+        .insert({ nom: fd.nom, ...champsOrigine })
+        .select()
+        .single();
+      if (error) { alert("Erreur lors de l'ajout : " + error.message); return; }
+      idFinal = data.id;
+    } else {
+      const { error } = await supabase
+        .from('membres')
+        .update(champsOrigine)
+        .eq('id', cible);
+      if (error) { alert('Erreur lors de la mise à jour : ' + error.message); return; }
+    }
+
+    const extras = chargerExtras();
+    extras[idFinal] = { ...(extras[idFinal] || {}), avatar: fd.avatar };
+    sauvegarderExtras(extras);
+
+    await chargerMembres(familleId);
+    setShowForm(false);
+    setFd(fdVide);
+  };
+
+  const supprimer = async (id) => {
+    if (!window.confirm('Supprimer ce membre de la famille ? (Il sera aussi retiré de la page Membres et de l\'arbre)')) return;
+    const { error } = await supabase.from('membres').delete().eq('id', id);
+    if (error) { alert('Erreur lors de la suppression : ' + error.message); return; }
+    const extras = chargerExtras();
+    delete extras[id];
+    sauvegarderExtras(extras);
+    await chargerMembres(familleId);
     setSel(null);
   };
 
@@ -54,10 +160,13 @@ export default function Racines() {
     setFd({...fd, langues: dejaDedans ? fd.langues.filter(x=>x!==l) : [...fd.langues, l]});
   };
 
-  const ethniesUniques = [...new Set(membres.map(m => m.ethnie))];
-  const languesUniques = [...new Set(membres.flatMap(m => m.langues||[]))];
-  const regionsUniques = [...new Set(membres.map(m => m.region))];
-  const avatars = ['👴','👵','👨','👩','🧒','👧','👦','🧔','👱','🧓'];
+  const ethniesUniques = [...new Set(membresDocumentes.map(m => m.ethnie))];
+  const languesUniques = [...new Set(membresDocumentes.flatMap(m => m.langues||[]))];
+  const regionsUniques = [...new Set(membresDocumentes.map(m => m.region).filter(Boolean))];
+
+  if (chargement) {
+    return <div className="racines-page"><p style={{padding:'2rem'}}>⏳ Chargement...</p></div>;
+  }
 
   return (
     <div className="racines-page">
@@ -65,13 +174,13 @@ export default function Racines() {
       <div className="racines-header">
         <div>
           <h1>🌍 Mes Racines</h1>
-          <p>Retrouve et préserve les origines de ta famille · ✅ sauvegardé</p>
+          <p>Retrouve et préserve les origines de ta famille · ☁️ sauvegardé sur Supabase</p>
         </div>
-        <button className="btn-ajouter-racine" onClick={()=>setShowForm(true)}>+ Ajouter une origine</button>
+        <button className="btn-ajouter-racine" onClick={ouvrirForm}>+ Ajouter une origine</button>
       </div>
 
       <div className="racines-stats">
-        <div className="rstat"><span className="rstat-icon">👥</span><div><h3>{membres.length}</h3><p>Membres tracés</p></div></div>
+        <div className="rstat"><span className="rstat-icon">👥</span><div><h3>{membresDocumentes.length}</h3><p>Membres tracés</p></div></div>
         <div className="rstat"><span className="rstat-icon">🌍</span><div><h3>{ethniesUniques.length}</h3><p>Ethnies</p></div></div>
         <div className="rstat"><span className="rstat-icon">🗣️</span><div><h3>{languesUniques.length}</h3><p>Langues</p></div></div>
         <div className="rstat"><span className="rstat-icon">📍</span><div><h3>{regionsUniques.length}</h3><p>Régions d'origine</p></div></div>
@@ -97,15 +206,15 @@ export default function Racines() {
             </div>
           </div>
           <div className="membres-origines">
-            {membres.map(m=>(
+            {membresDocumentes.map(m=>(
               <div key={m.id} className="origine-card" onClick={()=>setSel(m)}>
                 <div className="origine-avatar">{m.avatar}</div>
                 <div className="origine-info">
                   <div className="origine-nom">{m.nom}</div>
                   <div className="origine-gen">{m.generation}</div>
                   <div className="origine-lieu">
-                    <span>📍 {m.village}, {m.region}</span>
-                    <span>🌍 {m.pays}</span>
+                    <span>📍 {m.village || '—'}, {m.region || '—'}</span>
+                    <span>🌍 {m.pays || '—'}</span>
                   </div>
                   <div className="origine-tags">
                     <span className="tag-ethnie">{m.ethnie}</span>
@@ -117,7 +226,7 @@ export default function Racines() {
                 <button className="btn-voir">›</button>
               </div>
             ))}
-            <div className="origine-card ajouter" onClick={()=>setShowForm(true)}>
+            <div className="origine-card ajouter" onClick={ouvrirForm}>
               <div className="origine-avatar" style={{fontSize:'2rem'}}>+</div>
               <div className="origine-info">
                 <div className="origine-nom">Ajouter un ancêtre</div>
@@ -125,6 +234,11 @@ export default function Racines() {
               </div>
             </div>
           </div>
+          {membresSansOrigine.length > 0 && (
+            <p style={{color:'#888', fontSize:'.85rem', marginTop:'1rem'}}>
+              {membresSansOrigine.length} membre{membresSansOrigine.length>1?'s':''} de ta famille n'{membresSansOrigine.length>1?'ont':'a'} pas encore d'origine documentée : {membresSansOrigine.map(m=>m.nom).join(', ')}.
+            </p>
+          )}
         </div>
       )}
 
@@ -134,8 +248,8 @@ export default function Racines() {
             <h3>🌿 Composition ethnique de la famille</h3>
             <div className="ethnies-grid">
               {ethniesUniques.map((e,i)=>{
-                const count = membres.filter(m=>m.ethnie===e).length;
-                const pct = Math.round((count/membres.length)*100);
+                const count = membresDocumentes.filter(m=>m.ethnie===e).length;
+                const pct = Math.round((count/membresDocumentes.length)*100);
                 const couleurs = ['#2D6A4F','#B56A3A','#00BCD4','#EF5350','#FF9800','#9C27B0'];
                 return (
                   <div key={i} className="ethnie-card">
@@ -147,7 +261,7 @@ export default function Racines() {
                       <div className="ethnie-fill" style={{width:`${pct}%`, background:couleurs[i%couleurs.length]}}/>
                     </div>
                     <div className="ethnie-membres">
-                      {membres.filter(m=>m.ethnie===e).map((m,j)=>(
+                      {membresDocumentes.filter(m=>m.ethnie===e).map((m,j)=>(
                         <span key={j} className="ethnie-membre-tag">{m.avatar} {m.nom}</span>
                       ))}
                     </div>
@@ -160,7 +274,7 @@ export default function Racines() {
             <h3>🗣️ Langues parlées dans la famille</h3>
             <div className="langues-grid">
               {languesUniques.map((l,i)=>{
-                const membresLang = membres.filter(m=>(m.langues||[]).includes(l));
+                const membresLang = membresDocumentes.filter(m=>(m.langues||[]).includes(l));
                 return (
                   <div key={i} className="langue-card">
                     <div className="langue-icon">🗣️</div>
@@ -217,6 +331,7 @@ export default function Racines() {
               <p style={{textAlign:'center', color:'#888', fontSize:'0.85rem'}}>Capturez la voix d'un ancien de la famille</p>
             </div>
           </div>
+          <p style={{color:'#888', fontSize:'.8rem', marginTop:'1rem'}}>⚠️ Cet onglet affiche encore des exemples fixes — pas de vraie sauvegarde audio pour l'instant.</p>
         </div>
       )}
 
@@ -231,9 +346,9 @@ export default function Racines() {
             </div>
             <div className="detail-racine-grid">
               <div className="dr-item"><span>🌿 Ethnie</span><strong>{sel.ethnie}</strong></div>
-              <div className="dr-item"><span>📍 Village</span><strong>{sel.village}</strong></div>
-              <div className="dr-item"><span>🗺️ Région</span><strong>{sel.region}</strong></div>
-              <div className="dr-item"><span>🌍 Pays</span><strong>{sel.pays}</strong></div>
+              <div className="dr-item"><span>📍 Village</span><strong>{sel.village || '—'}</strong></div>
+              <div className="dr-item"><span>🗺️ Région</span><strong>{sel.region || '—'}</strong></div>
+              <div className="dr-item"><span>🌍 Pays</span><strong>{sel.pays || '—'}</strong></div>
               <div className="dr-item" style={{gridColumn:'1/-1'}}>
                 <span>🗣️ Langues parlées</span>
                 <div style={{display:'flex', flexWrap:'wrap', gap:'0.4rem', marginTop:'0.4rem'}}>
@@ -259,13 +374,23 @@ export default function Racines() {
           <div className="modal-racines">
             <button className="xbtn-r" onClick={()=>setShowForm(false)}>✕</button>
             <h3>🌍 Ajouter une origine</h3>
+
+            <div className="fg-r"><label>Membre concerné</label>
+              <select value={cible} onChange={e=>choisirCible(e.target.value === 'nouveau' ? 'nouveau' : e.target.value)}>
+                <option value="nouveau">+ Nouveau membre</option>
+                {membresSansOrigine.map(m=>(
+                  <option key={m.id} value={m.id}>{m.nom} (pas encore d'origine)</option>
+                ))}
+              </select>
+            </div>
+
             <div className="emoji-picker-r">
               {avatars.map(a=>(
                 <button key={a} className={fd.avatar===a?'av-btn actif':'av-btn'} onClick={()=>setFd({...fd,avatar:a})}>{a}</button>
               ))}
             </div>
             <div className="fg-r"><label>Nom complet *</label>
-              <input value={fd.nom} onChange={e=>setFd({...fd,nom:e.target.value})} placeholder="ex: Amadou Diallo"/>
+              <input value={fd.nom} onChange={e=>setFd({...fd,nom:e.target.value})} placeholder="ex: Amadou Diallo" disabled={cible !== 'nouveau'}/>
             </div>
             <div className="fg-r"><label>Génération</label>
               <select value={fd.generation} onChange={e=>setFd({...fd,generation:e.target.value})}>
@@ -320,14 +445,14 @@ export default function Racines() {
             <div className="fg-r"><label>Région</label>
               <input value={fd.region} onChange={e=>setFd({...fd,region:e.target.value})} placeholder="ex: Fouta Toro"/>
             </div>
-            <div className="fg-r"><label>Pays</label>
+            <div className="fg-r"><label>Pays d'origine</label>
               <input value={fd.pays} onChange={e=>setFd({...fd,pays:e.target.value})} placeholder="ex: Sénégal"/>
             </div>
             <div style={{display:'flex', gap:'0.8rem', marginTop:'1rem'}}>
               <button className="btn-fermer-r" onClick={()=>setShowForm(false)} style={{flex:1}}>Annuler</button>
               <button className="btn-fermer-r" onClick={ajouter} disabled={!fd.nom}
                 style={{flex:2, background:'#2D6A4F', color:'white', border:'none', opacity:fd.nom?1:0.5}}>
-                Ajouter
+                {cible === 'nouveau' ? 'Ajouter' : 'Enregistrer'}
               </button>
             </div>
           </div>

@@ -1,28 +1,62 @@
 import React, { useState, useEffect } from 'react';
 import './Membres.css';
 import { supabase } from './supabaseClient';
-const STORAGE_KEY = 'yekeni_membres';
 
-const membresInitiaux = [
-  { id:1, nom:'Moussa Diallo', prenom:'Moussa', role:'Admin', sang:'O+', avatar:'👴', ville:'Dakar', pays:'Sénégal', profession:'Retraité', telephone:'+221 77 000 00 00', maladie:'Aucune', allergie:'Aucune', estAdmin:true, estCoAdmin:false },
-  { id:2, nom:'Fatoumata Diallo', prenom:'Fatoumata', role:'Membre', sang:'A+', avatar:'👵', ville:'Dakar', pays:'Sénégal', profession:'Ménagère', telephone:'+221 77 000 00 01', maladie:'Diabète', allergie:'Aucune', estAdmin:false, estCoAdmin:false },
-  { id:3, nom:'Ibrahim Diallo', prenom:'Ibrahim', role:'Membre', sang:'B+', avatar:'👨', ville:'Paris', pays:'France', profession:'Ingénieur', telephone:'+33 6 00 00 00 00', maladie:'Aucune', allergie:'Pénicilline', estAdmin:false, estCoAdmin:true },
-  { id:4, nom:'Aminata Diallo', prenom:'Aminata', role:'Membre', sang:'AB+', avatar:'👩', ville:'New York', pays:'USA', profession:'Médecin', telephone:'+1 000 000 0000', maladie:'Aucune', allergie:'Aucune', estAdmin:false, estCoAdmin:false },
-  { id:5, nom:'Ousmane Diallo', prenom:'Ousmane', role:'Invité', sang:'O+', avatar:'🧒', ville:'Conakry', pays:'Guinée', profession:'Étudiant', telephone:'+224 00 00 00 00', maladie:'Drépanocytose', allergie:'Aucune', estAdmin:false, estCoAdmin:false },
-];
+// avatar/sang/maladie/allergie n'ont toujours pas de colonne réelle sur membres.
+// role/estAdmin/estCoAdmin en revanche viennent maintenant de profils.role
+// (via profils.membre_id) quand le membre a un compte lié.
+const EXTRAS_KEY = 'yekeni_membres_extras';
 
-const charger = () => {
+const chargerExtras = () => {
   try {
-    const saved = localStorage.getItem(STORAGE_KEY);
+    const saved = localStorage.getItem(EXTRAS_KEY);
     if (saved) return JSON.parse(saved);
-  } catch(e) {}
-  return membresInitiaux;
+  } catch (e) {}
+  return {};
 };
+
+const sauvegarderExtras = (extras) => {
+  try { localStorage.setItem(EXTRAS_KEY, JSON.stringify(extras)); } catch (e) {}
+};
+
+const extrasParDefaut = (role = 'Membre') => ({
+  avatar: '👤',
+  sang: 'Inconnu',
+  maladie: 'Aucune',
+  allergie: 'Aucune',
+  role,
+});
+
+// role_type Supabase : admin, moderateur, membre, invite
+const roleVersLabel = { admin: 'Admin', moderateur: 'Co-Admin', membre: 'Membre', invite: 'Invité' };
+
+// Fusionne les lignes réelles de Supabase avec les extras locaux et les profils liés
+const fusionnerAvecExtras = (rows, extras, profilsParMembre) => rows.map(r => {
+  const profil = profilsParMembre[r.id];
+  return {
+    id: r.id,
+    nom: r.nom,
+    prenom: r.prenom,
+    genre: r.genre,
+    date_naissance: r.date_naissance,
+    ville: r.ville || '',
+    pays: r.pays || '',
+    profession: r.profession || '',
+    telephone: r.telephone || '',
+    ...extrasParDefaut(),
+    ...(extras[r.id] || {}),
+    profilId: profil?.id || null,
+    profilRole: profil?.role || null,
+    estAdmin: profil?.role === 'admin',
+    estCoAdmin: profil?.role === 'moderateur',
+  };
+});
 
 const emojis = ['👴','👵','👨','👩','🧒','👧','👦','👤','🧑','👱'];
 
 export default function Membres() {
-  const [membres, setMembres] = useState(charger);
+  const [membres, setMembres] = useState([]);
+  const [chargement, setChargement] = useState(true);
   const [recherche, setRecherche] = useState('');
   const [membreSelectionne, setMembreSelectionne] = useState(null);
   const [showForm, setShowForm] = useState(false);
@@ -31,15 +65,17 @@ export default function Membres() {
   const [showCoAdmin, setShowCoAdmin] = useState(false);
   const [confirmTransfert, setConfirmTransfert] = useState(null);
   const [nouveau, setNouveau] = useState({
-    nom:'', prenom:'', role:'Membre', sang:'Inconnu', avatar:'👤',
-    ville:'', pays:'', profession:'', telephone:'', maladie:'Aucune', allergie:'Aucune'
+    nom: '', prenom: '', genre: 'homme', date_naissance: '',
+    role: 'Membre', sang: 'Inconnu', avatar: '👤',
+    ville: '', pays: '', profession: '', telephone: '', maladie: 'Aucune', allergie: 'Aucune',
   });
+  const GENRES = ['homme', 'femme', 'autre'];
   const [familleCode, setFamilleCode] = useState(null);
-const [monRole, setMonRole] = useState(null);
-const [showInvite, setShowInvite] = useState(false);
-const [copie, setCopie] = useState(false);
-
-  useEffect(()=>{ try { localStorage.setItem(STORAGE_KEY, JSON.stringify(membres)); } catch(e){} }, [membres]);
+  const [familleId, setFamilleId] = useState(null);
+  const [monRole, setMonRole] = useState(null);
+  const [monUserId, setMonUserId] = useState(null);
+  const [showInvite, setShowInvite] = useState(false);
+  const [copie, setCopie] = useState(false);
 
   const admin = membres.find(m => m.estAdmin);
   const coAdmins = membres.filter(m => m.estCoAdmin);
@@ -48,79 +84,178 @@ const [copie, setCopie] = useState(false);
     m.ville.toLowerCase().includes(recherche.toLowerCase()) ||
     m.pays.toLowerCase().includes(recherche.toLowerCase())
   );
-const [debugError, setDebugError] = useState(null);
 
-useEffect(() => {
-  async function chargerFamille() {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { setDebugError('pas d\'utilisateur'); return; }
+  const chargerMembres = async (fid) => {
+    if (!fid) { setChargement(false); return; }
 
-    const { data: profil, error: err1 } = await supabase
-      .from('profils')
-      .select('role, famille_id')
-      .eq('id', user.id)
-      .single();
+    const [{ data: membresData, error: errM }, { data: profilsData, error: errP }] = await Promise.all([
+      supabase.from('membres').select('*').eq('famille_id', fid).order('nom', { ascending: true }),
+      supabase.from('profils').select('id, membre_id, role').eq('famille_id', fid),
+    ]);
 
-    if (err1) { setDebugError('erreur profil: ' + JSON.stringify(err1)); return; }
-    if (!profil) { setDebugError('profil vide'); return; }
+    if (errM) { console.error('Erreur chargement membres :', errM); setChargement(false); return; }
+    if (errP) { console.error('Erreur chargement profils :', errP); }
 
-    setMonRole(profil.role);
+    const profilsParMembre = {};
+    (profilsData || []).forEach(p => { if (p.membre_id) profilsParMembre[p.membre_id] = p; });
 
-    if (profil.famille_id) {
-      const { data: famille, error: err2 } = await supabase
-        .from('familles')
-        .select('code_invitation')
-        .eq('id', profil.famille_id)
-        .single();
-      if (err2) { setDebugError('erreur famille: ' + JSON.stringify(err2)); return; }
-      if (famille) setFamilleCode(famille.code_invitation);
-    }
-  }
-  chargerFamille();
-}, []);
-
-  const ajouterMembre = () => {
-    if (!nouveau.nom) return;
-    setMembres([...membres, { ...nouveau, id: Date.now(), estAdmin:false, estCoAdmin:false }]);
-    setShowForm(false);
-    setNouveau({ nom:'', prenom:'', role:'Membre', sang:'Inconnu', avatar:'👤', ville:'', pays:'', profession:'', telephone:'', maladie:'Aucune', allergie:'Aucune' });
+    const extras = chargerExtras();
+    setMembres(fusionnerAvecExtras(membresData || [], extras, profilsParMembre));
+    setChargement(false);
   };
 
-  const supprimerMembre = (id) => {
+  useEffect(() => {
+    async function chargerFamille() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { setChargement(false); return; }
+      setMonUserId(user.id);
+
+      const { data: profil, error: err1 } = await supabase
+        .from('profils')
+        .select('role, famille_id')
+        .eq('id', user.id)
+        .single();
+
+      if (err1) { console.error('Erreur profil :', err1); setChargement(false); return; }
+      if (!profil) { setChargement(false); return; }
+
+      setMonRole(profil.role);
+      setFamilleId(profil.famille_id);
+
+      if (profil.famille_id) {
+        const { data: famille, error: err2 } = await supabase
+          .from('familles')
+          .select('code_invitation')
+          .eq('id', profil.famille_id)
+          .single();
+        if (err2) { console.error('Erreur famille :', err2); }
+        else if (famille) setFamilleCode(famille.code_invitation);
+
+        await chargerMembres(profil.famille_id);
+      } else {
+        setChargement(false);
+      }
+    }
+    chargerFamille();
+  }, []);
+
+  const ajouterMembre = async () => {
+    if (!nouveau.nom || !familleId) return;
+
+    const { data, error } = await supabase
+      .from('membres')
+      .insert({
+        prenom: nouveau.prenom,
+        nom: nouveau.nom,
+        genre: nouveau.genre,
+        date_naissance: nouveau.date_naissance || null,
+        ville: nouveau.ville,
+        pays: nouveau.pays,
+        profession: nouveau.profession,
+        telephone: nouveau.telephone,
+        famille_id: familleId,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      alert("Erreur lors de l'ajout du membre : " + error.message);
+      return;
+    }
+
+    const extras = chargerExtras();
+    extras[data.id] = {
+      avatar: nouveau.avatar,
+      sang: nouveau.sang,
+      maladie: nouveau.maladie,
+      allergie: nouveau.allergie,
+      role: nouveau.role,
+    };
+    sauvegarderExtras(extras);
+
+    await chargerMembres(familleId);
+    setShowForm(false);
+    setNouveau({
+      nom: '', prenom: '', genre: 'homme', date_naissance: '',
+      role: 'Membre', sang: 'Inconnu', avatar: '👤',
+      ville: '', pays: '', profession: '', telephone: '', maladie: 'Aucune', allergie: 'Aucune',
+    });
+  };
+
+  const supprimerMembre = async (id) => {
     const m = membres.find(x => x.id === id);
     if (m?.estAdmin) { alert('Impossible de supprimer l\'Admin ! Transférez d\'abord le rôle.'); return; }
-    setMembres(membres.filter(m => m.id !== id));
+
+    const { error } = await supabase.from('membres').delete().eq('id', id);
+    if (error) { alert('Erreur lors de la suppression : ' + error.message); return; }
+
+    const extras = chargerExtras();
+    delete extras[id];
+    sauvegarderExtras(extras);
+
+    await chargerMembres(familleId);
     setShowConfirm(null);
     setMembreSelectionne(null);
   };
 
-  const transfererAdmin = (id) => {
-    setMembres(membres.map(m => ({
-      ...m,
-      estAdmin: m.id === id,
-      role: m.id === id ? 'Admin' : (m.estAdmin ? 'Membre' : m.role)
-    })));
+  // Relie le compte connecté à une fiche membre de l'arbre (nécessaire pour pouvoir
+  // recevoir un rôle Admin/Co-Admin, qui vit sur profils, pas sur membres)
+  const relierMonCompte = async (membreId) => {
+    if (!monUserId) return;
+    const { error } = await supabase.from('profils').update({ membre_id: membreId }).eq('id', monUserId);
+    if (error) { alert('Erreur : ' + error.message); return; }
+    await chargerMembres(familleId);
+    alert('✅ Ton compte est maintenant relié à cette fiche !');
+  };
+
+  const transfererAdmin = async (id) => {
+    const cible = membres.find(m => m.id === id);
+    if (!cible?.profilId) { alert("Ce membre n'a pas encore de compte lié — il/elle doit d'abord se connecter et utiliser \"🔗 C'est moi\"."); return; }
+
+    if (admin?.profilId) {
+      const { error: errDemote } = await supabase.from('profils').update({ role: 'membre' }).eq('id', admin.profilId);
+      if (errDemote) { alert('Erreur : ' + errDemote.message); return; }
+    }
+    const { error: errPromote } = await supabase.from('profils').update({ role: 'admin' }).eq('id', cible.profilId);
+    if (errPromote) { alert('Erreur : ' + errPromote.message); return; }
+
+    await chargerMembres(familleId);
     setShowTransfert(false);
     setConfirmTransfert(null);
     setMembreSelectionne(null);
     alert('👑 Le rôle d\'Admin a été transféré avec succès !');
   };
 
-  const toggleCoAdmin = (id) => {
+  const toggleCoAdmin = async (id) => {
     const m = membres.find(x => x.id === id);
     if (m?.estAdmin) { alert('L\'Admin principal ne peut pas être Co-Admin.'); return; }
+    if (!m?.profilId) { alert("Ce membre n'a pas encore de compte lié — il/elle doit d'abord se connecter et utiliser \"🔗 C'est moi\"."); return; }
     const nbCoAdmins = membres.filter(x => x.estCoAdmin).length;
     if (!m?.estCoAdmin && nbCoAdmins >= 2) { alert('Maximum 2 Co-Admins autorisés.'); return; }
-    setMembres(membres.map(x => x.id === id ? { ...x, estCoAdmin: !x.estCoAdmin } : x));
+
+    const nouveauRole = m.estCoAdmin ? 'membre' : 'moderateur';
+    const { error } = await supabase.from('profils').update({ role: nouveauRole }).eq('id', m.profilId);
+    if (error) { alert('Erreur : ' + error.message); return; }
+
+    await chargerMembres(familleId);
     setShowCoAdmin(false);
   };
 
   const getBadgeRole = (m) => {
     if (m.estAdmin) return { label: '👑 Admin', cls: 'admin' };
     if (m.estCoAdmin) return { label: '🤝 Co-Admin', cls: 'coadmin' };
-    if (m.role === 'Invité') return { label: '👤 Invité', cls: 'invité' };
+    const label = m.profilRole ? roleVersLabel[m.profilRole] : m.role;
+    if (label === 'Invité') return { label: '👤 Invité', cls: 'invité' };
     return { label: '👥 Membre', cls: 'membre' };
   };
+
+  if (chargement) {
+    return (
+      <div className="membres-page">
+        <div className="no-results"><p>⏳ Chargement des membres...</p></div>
+      </div>
+    );
+  }
 
   return (
     <div className="membres-page">
@@ -158,7 +293,7 @@ useEffect(() => {
           <span>👥 {membres.length} membres</span>
           <span>🌍 {[...new Set(membres.map(m=>m.pays))].length} pays</span>
         </div>
-       {(monRole === 'admin' || monRole === 'co-admin') && (
+       {(monRole === 'admin' || monRole === 'moderateur') && (
   <button className="btn-nouveau" style={{background:'#E08E45'}} onClick={()=>setShowInvite(true)}>🔗 Inviter un membre</button>
 )}
 <button className="btn-nouveau" onClick={()=>setShowForm(true)}>+ Nouveau membre</button>
@@ -200,14 +335,25 @@ useEffect(() => {
               )}
             </div>
 
+            {!membreSelectionne.profilId && (
+              <div style={{background:'#FFF8E1', border:'2px solid #FFD54F', borderRadius:'10px', padding:'.8rem', marginBottom:'1rem', display:'flex', alignItems:'center', gap:'.8rem', flexWrap:'wrap'}}>
+                <span style={{fontSize:'.85rem', color:'#795548', flex:1}}>Aucun compte relié à cette fiche — les rôles Admin/Co-Admin ne sont possibles qu'avec un compte.</span>
+                <button onClick={()=>relierMonCompte(membreSelectionne.id)} style={{background:'#2D6A4F', color:'white', border:'none', padding:'.4rem .9rem', borderRadius:'8px', cursor:'pointer', fontWeight:'600', fontSize:'.8rem'}}>
+                  🔗 C'est moi
+                </button>
+              </div>
+            )}
+
             {/* ACTIONS ADMIN */}
             <div style={{display:'flex', gap:'.5rem', flexWrap:'wrap', marginBottom:'1rem', padding:'0.8rem', background:'#F8FAFC', borderRadius:'10px'}}>
               <button onClick={()=>{ setConfirmTransfert(membreSelectionne); setShowTransfert(false); }}
-                style={{background:'#FFF8E1', border:'2px solid #FFD54F', color:'#B7791F', padding:'.45rem .9rem', borderRadius:'9px', cursor:'pointer', fontWeight:'600', fontSize:'.82rem'}}>
+                disabled={!membreSelectionne.profilId}
+                style={{background:'#FFF8E1', border:'2px solid #FFD54F', color:'#B7791F', padding:'.45rem .9rem', borderRadius:'9px', cursor: membreSelectionne.profilId?'pointer':'not-allowed', fontWeight:'600', fontSize:'.82rem', opacity: membreSelectionne.profilId?1:0.5}}>
                 👑 Nommer Admin
               </button>
               <button onClick={()=>toggleCoAdmin(membreSelectionne.id)}
-                style={{background: membreSelectionne.estCoAdmin?'#FEF2F2':'#F0FDF4', border:`2px solid ${membreSelectionne.estCoAdmin?'#EF5350':'#2D6A4F'}`, color: membreSelectionne.estCoAdmin?'#EF5350':'#2D6A4F', padding:'.45rem .9rem', borderRadius:'9px', cursor:'pointer', fontWeight:'600', fontSize:'.82rem'}}>
+                disabled={!membreSelectionne.profilId}
+                style={{background: membreSelectionne.estCoAdmin?'#FEF2F2':'#F0FDF4', border:`2px solid ${membreSelectionne.estCoAdmin?'#EF5350':'#2D6A4F'}`, color: membreSelectionne.estCoAdmin?'#EF5350':'#2D6A4F', padding:'.45rem .9rem', borderRadius:'9px', cursor: membreSelectionne.profilId?'pointer':'not-allowed', fontWeight:'600', fontSize:'.82rem', opacity: membreSelectionne.profilId?1:0.5}}>
                 {membreSelectionne.estCoAdmin ? '❌ Retirer Co-Admin' : '🤝 Nommer Co-Admin'}
               </button>
             </div>
@@ -244,17 +390,17 @@ useEffect(() => {
         <div className="form-overlay" onClick={()=>setShowTransfert(false)}>
           <div className="form-modal" onClick={e=>e.stopPropagation()}>
             <h3>👑 Transférer le rôle d'Admin</h3>
-            <p style={{color:'#888', fontSize:'.88rem', marginBottom:'1rem'}}>⚠️ Cette action est importante. L'Admin actuel deviendra Membre. Choisissez avec soin.</p>
+            <p style={{color:'#888', fontSize:'.88rem', marginBottom:'1rem'}}>⚠️ Cette action est importante. L'Admin actuel deviendra Membre. Seuls les membres avec un compte lié peuvent devenir Admin.</p>
             <div style={{display:'flex', flexDirection:'column', gap:'.5rem', maxHeight:'300px', overflowY:'auto'}}>
               {membres.filter(m=>!m.estAdmin).map(m=>(
-                <div key={m.id} style={{display:'flex', alignItems:'center', gap:'.8rem', padding:'.8rem', background:'#F8FAFC', borderRadius:'10px', cursor:'pointer', border:'2px solid transparent'}}
-                  onClick={()=>setConfirmTransfert(m)}
-                  onMouseOver={e=>e.currentTarget.style.borderColor='#2D6A4F'}
+                <div key={m.id} style={{display:'flex', alignItems:'center', gap:'.8rem', padding:'.8rem', background:'#F8FAFC', borderRadius:'10px', cursor: m.profilId?'pointer':'not-allowed', border:'2px solid transparent', opacity: m.profilId?1:0.5}}
+                  onClick={()=>{ if (m.profilId) setConfirmTransfert(m); }}
+                  onMouseOver={e=>{ if(m.profilId) e.currentTarget.style.borderColor='#2D6A4F'; }}
                   onMouseOut={e=>e.currentTarget.style.borderColor='transparent'}>
                   <span style={{fontSize:'1.5rem'}}>{m.avatar}</span>
                   <div>
                     <div style={{fontWeight:'700', fontSize:'.9rem'}}>{m.nom}</div>
-                    <div style={{fontSize:'.78rem', color:'#888'}}>{m.profession} · {m.ville}</div>
+                    <div style={{fontSize:'.78rem', color:'#888'}}>{m.profilId ? `${m.profession} · ${m.ville}` : 'Aucun compte lié'}</div>
                   </div>
                   {m.estCoAdmin && <span style={{marginLeft:'auto', background:'#dcfce7', color:'#2D6A4F', padding:'2px 8px', borderRadius:'8px', fontSize:'.75rem', fontWeight:'600'}}>Co-Admin</span>}
                 </div>
@@ -286,19 +432,19 @@ useEffect(() => {
         <div className="form-overlay" onClick={()=>setShowCoAdmin(false)}>
           <div className="form-modal" onClick={e=>e.stopPropagation()}>
             <h3>🤝 Gérer les Co-Admins</h3>
-            <p style={{color:'#888', fontSize:'.88rem', marginBottom:'1rem'}}>Maximum 2 Co-Admins. Ils peuvent gérer la famille en cas d'absence de l'Admin.</p>
+            <p style={{color:'#888', fontSize:'.88rem', marginBottom:'1rem'}}>Maximum 2 Co-Admins. Seuls les membres avec un compte lié peuvent être nommés.</p>
             <div style={{display:'flex', flexDirection:'column', gap:'.5rem', maxHeight:'300px', overflowY:'auto'}}>
               {membres.filter(m=>!m.estAdmin).map(m=>(
-                <div key={m.id} style={{display:'flex', alignItems:'center', gap:'.8rem', padding:'.8rem', background: m.estCoAdmin?'#F0FDF4':'#F8FAFC', borderRadius:'10px', border:`2px solid ${m.estCoAdmin?'#2D6A4F':'transparent'}`}}>
+                <div key={m.id} style={{display:'flex', alignItems:'center', gap:'.8rem', padding:'.8rem', background: m.estCoAdmin?'#F0FDF4':'#F8FAFC', borderRadius:'10px', border:`2px solid ${m.estCoAdmin?'#2D6A4F':'transparent'}`, opacity: m.profilId?1:0.5}}>
                   <span style={{fontSize:'1.5rem'}}>{m.avatar}</span>
                   <div style={{flex:1}}>
                     <div style={{fontWeight:'700', fontSize:'.9rem'}}>{m.nom}</div>
-                    <div style={{fontSize:'.78rem', color:'#888'}}>{m.profession} · {m.ville}</div>
+                    <div style={{fontSize:'.78rem', color:'#888'}}>{m.profilId ? `${m.profession} · ${m.ville}` : 'Aucun compte lié'}</div>
                   </div>
-                  <button onClick={()=>toggleCoAdmin(m.id)} style={{
+                  <button onClick={()=>toggleCoAdmin(m.id)} disabled={!m.profilId} style={{
                     background: m.estCoAdmin?'#EF5350':'#2D6A4F', color:'white',
                     border:'none', padding:'.4rem .8rem', borderRadius:'8px',
-                    cursor:'pointer', fontWeight:'600', fontSize:'.78rem'
+                    cursor: m.profilId?'pointer':'not-allowed', fontWeight:'600', fontSize:'.78rem'
                   }}>
                     {m.estCoAdmin ? '❌ Retirer' : '✅ Nommer'}
                   </button>
@@ -329,6 +475,16 @@ useEffect(() => {
               </div>
             </div>
             <div className="form-row">
+              <div className="form-group"><label>Genre</label>
+                <select value={nouveau.genre} onChange={e=>setNouveau({...nouveau,genre:e.target.value})}>
+                  {GENRES.map(g => <option key={g} value={g}>{g.charAt(0).toUpperCase()+g.slice(1)}</option>)}
+                </select>
+              </div>
+              <div className="form-group"><label>Date de naissance</label>
+                <input type="date" value={nouveau.date_naissance} onChange={e=>setNouveau({...nouveau,date_naissance:e.target.value})}/>
+              </div>
+            </div>
+            <div className="form-row">
               <div className="form-group"><label>Ville</label>
                 <input type="text" placeholder="Dakar" value={nouveau.ville} onChange={e=>setNouveau({...nouveau,ville:e.target.value})}/>
               </div>
@@ -345,7 +501,7 @@ useEffect(() => {
               </div>
             </div>
             <div className="form-row">
-              <div className="form-group"><label>Rôle</label>
+              <div className="form-group"><label>Rôle (avant inscription)</label>
                 <select value={nouveau.role} onChange={e=>setNouveau({...nouveau,role:e.target.value})}>
                   <option>Membre</option><option>Invité</option>
                 </select>

@@ -1,33 +1,30 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './ArbreAnime.css';
+import { supabase } from './supabaseClient';
 
-const STORAGE_KEY = 'yekeni_arbre';
-
-const creerMembre = (id, nom, prenom, genre, annee='', statut='vivant') => ({
-  id, nom, prenom, genre, annee, statut, photo: null,
-  parentIds: [], conjointIds: [], enfantIds: []
+const mapRow = (r) => ({
+  id: r.id,
+  nom: r.nom || '',
+  prenom: r.prenom || '',
+  genre: r.genre,
+  dateNaissance: r.date_naissance || '',
+  annee: r.date_naissance ? String(r.date_naissance).slice(0, 4) : '',
+  decede: !!r.decede,
+  photo: r.photo_url || null,
+  pereId: r.pere_id,
+  mereId: r.mere_id,
+  conjointIds: r.conjoint_ids || [],
 });
 
-const charger = () => {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      const data = JSON.parse(saved);
-      return { membres: data.membres, nextId: data.nextId || 2 };
-    }
-  } catch(e) {}
-  return { membres: [creerMembre(1, 'Moi', '', 'homme')], nextId: 2 };
-};
-
 export default function ArbreAnime() {
-  const init = charger();
-  const [membres, setMembres] = useState(init.membres);
-  const [nextId, setNextId] = useState(init.nextId);
-  const [centreId, setCentreId] = useState(1);
+  const [membres, setMembres] = useState([]);
+  const [chargement, setChargement] = useState(true);
+  const [familleId, setFamilleId] = useState(null);
+  const [centreId, setCentreId] = useState(null);
   const [historique, setHistorique] = useState([]);
   const [form, setForm] = useState(null);
   const [profilEdit, setProfilEdit] = useState(null);
-  const [fd, setFd] = useState({ nom:'', prenom:'', genre:'homme', annee:'', statut:'vivant' });
+  const [fd, setFd] = useState({ nom:'', prenom:'', genre:'homme', date_naissance:'', statut:'vivant' });
   const [fdEdit, setFdEdit] = useState({});
   const [recherche, setRecherche] = useState('');
   const [showRecherche, setShowRecherche] = useState(false);
@@ -37,12 +34,43 @@ export default function ArbreAnime() {
   const [bioLoading, setBioLoading] = useState(false);
   const [bioMembre, setBioMembre] = useState(null);
 
-  useEffect(()=>{
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ membres, nextId })); } catch(e) {}
-  }, [membres, nextId]);
+  const chargerMembres = async (fid) => {
+    const { data, error } = await supabase
+      .from('membres')
+      .select('*')
+      .eq('famille_id', fid)
+      .order('nom', { ascending: true });
+    if (error) { console.error('Erreur chargement arbre :', error); return; }
+    setMembres((data || []).map(mapRow));
+  };
+
+  useEffect(() => {
+    async function init() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { setChargement(false); return; }
+      const { data: profil, error } = await supabase
+        .from('profils')
+        .select('famille_id')
+        .eq('id', user.id)
+        .single();
+      if (error || !profil?.famille_id) { setChargement(false); return; }
+      setFamilleId(profil.famille_id);
+      await chargerMembres(profil.famille_id);
+      setChargement(false);
+    }
+    init();
+  }, []);
+
+  useEffect(() => {
+    if (membres.length > 0 && !centreId) setCentreId(membres[0].id);
+    if (membres.length > 0 && centreId && !membres.find(m => m.id === centreId)) {
+      setCentreId(membres[0].id);
+      setHistorique([]);
+    }
+  }, [membres, centreId]);
 
   const get = id => membres.find(m => m.id === id);
-  const centre = get(centreId);
+  const centre = centreId ? get(centreId) : null;
 
   const naviguer = (id) => {
     setHistorique(h => [...h, centreId]);
@@ -58,7 +86,7 @@ export default function ArbreAnime() {
 
   const retourDebut = () => {
     setHistorique([]);
-    setCentreId(1);
+    if (membres.length > 0) setCentreId(membres[0].id);
   };
 
   const genererBio = async (m) => {
@@ -66,94 +94,108 @@ export default function ArbreAnime() {
     setBio('');
     setBioMembre(m);
     try {
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
+      const response = await fetch('/api/generate_bio', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'anthropic-dangerous-direct-browser-access': 'true',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 1000,
-          messages: [{
-            role: 'user',
-            content: `Tu es un assistant de généalogie africaine. Génère une belle biographie courte (3-4 phrases) et émouvante pour ce membre de famille:
-            - Prénom: ${m.prenom || ''}
-            - Nom: ${m.nom || ''}
-            - Année de naissance: ${m.annee || 'inconnue'}
-            - Statut: ${m.statut === 'decede' ? 'Décédé(e)' : 'Vivant(e)'}
-            - Genre: ${m.genre === 'homme' ? 'Homme' : 'Femme'}
-            Écris en français, avec chaleur et respect pour la culture africaine.`
-          }]
+          prenom: m.prenom,
+          nom: m.nom,
+          annee: m.annee,
+          decede: m.decede,
+          genre: m.genre,
         })
       });
       const data = await response.json();
-      setBio(data.content?.[0]?.text || 'Impossible de générer la biographie.');
+      if (!response.ok) {
+        setBio('Erreur : ' + (data.error || 'impossible de générer la biographie.'));
+      } else {
+        setBio(data.bio || 'Impossible de générer la biographie.');
+      }
     } catch(e) {
-      setBio('Erreur: ' + e.message);
+      setBio('Erreur : ' + e.message);
     }
     setBioLoading(false);
   };
 
-  const ajouter = () => {
+  const ajouter = async () => {
     if (!fd.nom && !fd.prenom) return;
     const { type, refId } = form;
-    const nid = nextId;
-    setNextId(n => n + 1);
-    const nm = creerMembre(nid, fd.nom, fd.prenom, fd.genre, fd.annee, fd.statut);
-    const ref = get(refId);
-    if (type==='pere'||type==='mere') nm.enfantIds=[refId];
-    if (type==='conjoint') nm.conjointIds=[refId];
-    if (type==='fils'||type==='fille') nm.parentIds=[refId];
-    if (type==='frere'||type==='soeur') nm.parentIds=[...(ref?.parentIds||[])];
-    setMembres(ms=>[
-      ...ms.map(m => {
-        if (m.id !== refId) {
-          if ((type==='frere'||type==='soeur') && (ref?.parentIds||[]).includes(m.id)) {
-            return {...m, enfantIds:[...m.enfantIds, nid]};
-          }
-          return m;
-        }
-        if (type==='pere'||type==='mere') return {...m, parentIds:[...m.parentIds, nid]};
-        if (type==='conjoint') return {...m, conjointIds:[...m.conjointIds, nid]};
-        if (type==='fils'||type==='fille') return {...m, enfantIds:[...m.enfantIds, nid]};
-        return m;
-      }),
-      nm
-    ]);
+    const ref = refId ? get(refId) : null;
+
+    const nouveauRow = {
+      prenom: fd.prenom,
+      nom: fd.nom,
+      genre: fd.genre,
+      date_naissance: fd.date_naissance || null,
+      decede: fd.statut === 'decede',
+      famille_id: familleId,
+    };
+
+    if ((type === 'fils' || type === 'fille') && ref) {
+      if (ref.genre === 'homme') nouveauRow.pere_id = ref.id; else nouveauRow.mere_id = ref.id;
+    }
+    if ((type === 'frere' || type === 'soeur') && ref) {
+      if (ref.pereId) nouveauRow.pere_id = ref.pereId;
+      if (ref.mereId) nouveauRow.mere_id = ref.mereId;
+    }
+
+    const { data, error } = await supabase.from('membres').insert(nouveauRow).select().single();
+    if (error) { alert("Erreur lors de l'ajout : " + error.message); return; }
+
+    if (type === 'pere' && ref) {
+      await supabase.from('membres').update({ pere_id: data.id }).eq('id', ref.id);
+    }
+    if (type === 'mere' && ref) {
+      await supabase.from('membres').update({ mere_id: data.id }).eq('id', ref.id);
+    }
+    if (type === 'conjoint' && ref) {
+      await supabase.from('membres').update({ conjoint_ids: [...(ref.conjointIds||[]), data.id] }).eq('id', ref.id);
+      await supabase.from('membres').update({ conjoint_ids: [ref.id] }).eq('id', data.id);
+    }
+
+    await chargerMembres(familleId);
     setForm(null);
-    setFd({nom:'',prenom:'',genre:'homme',annee:'',statut:'vivant'});
+    setFd({ nom:'', prenom:'', genre:'homme', date_naissance:'', statut:'vivant' });
   };
 
-  const modifier = () => {
-    setMembres(ms => ms.map(m => m.id === profilEdit.id ? { ...m, ...fdEdit } : m));
+  const modifier = async () => {
+    const { error } = await supabase.from('membres').update({
+      nom: fdEdit.nom,
+      prenom: fdEdit.prenom,
+      genre: fdEdit.genre,
+      date_naissance: fdEdit.date_naissance || null,
+      decede: fdEdit.statut === 'decede',
+    }).eq('id', profilEdit.id);
+    if (error) { alert('Erreur : ' + error.message); return; }
+    await chargerMembres(familleId);
     setProfilEdit(null);
   };
 
-  const supprimer = (id) => {
-    if (!window.confirm('Supprimer ce membre ?')) return;
-    setMembres(ms => ms
-      .filter(m => m.id !== id)
-      .map(m => ({
-        ...m,
-        parentIds: m.parentIds.filter(x => x !== id),
-        conjointIds: m.conjointIds.filter(x => x !== id),
-        enfantIds: m.enfantIds.filter(x => x !== id),
-      }))
-    );
-    if (centreId === id) retourDebut();
+  const supprimer = async (id) => {
+    if (!window.confirm('Supprimer ce membre ? (Il sera aussi retiré de la page Membres)')) return;
+
+    const affectes = membres.filter(m => m.conjointIds.includes(id));
+    for (const m of affectes) {
+      await supabase.from('membres').update({ conjoint_ids: m.conjointIds.filter(x => x !== id) }).eq('id', m.id);
+    }
+
+    const { error } = await supabase.from('membres').delete().eq('id', id);
+    if (error) { alert('Erreur lors de la suppression : ' + error.message); return; }
+
+    if (centreId === id) { setHistorique([]); setCentreId(null); }
+    await chargerMembres(familleId);
     setProfilEdit(null);
   };
 
   const ouvrir = (type, refId, genre='homme') => {
-    setFd({nom:'',prenom:'',genre,annee:'',statut:'vivant'});
+    setFd({nom:'',prenom:'',genre,date_naissance:'',statut:'vivant'});
     setForm({type, refId});
     setProfilEdit(null);
   };
 
   const ouvrirEdit = (m) => {
     setProfilEdit(m);
-    setFdEdit({ nom:m.nom, prenom:m.prenom, genre:m.genre, annee:m.annee, statut:m.statut });
+    setFdEdit({ nom:m.nom, prenom:m.prenom, genre:m.genre, date_naissance:m.dateNaissance, statut: m.decede ? 'decede' : 'vivant' });
     setForm(null);
     setBio('');
     setBioMembre(null);
@@ -163,20 +205,13 @@ export default function ArbreAnime() {
     const file = e.target.files[0];
     if (!file || !photoId) return;
     const r = new FileReader();
-    r.onload = ev => {
-      setMembres(ms => ms.map(m => m.id === photoId ? {...m, photo: ev.target.result} : m));
+    r.onload = async (ev) => {
+      const { error } = await supabase.from('membres').update({ photo_url: ev.target.result }).eq('id', photoId);
+      if (error) { alert('Erreur upload photo : ' + error.message); return; }
+      await chargerMembres(familleId);
     };
     r.readAsDataURL(file);
     e.target.value = '';
-  };
-
-  const reinitialiser = () => {
-    if (!window.confirm('Effacer tout l\'arbre ?')) return;
-    localStorage.removeItem(STORAGE_KEY);
-    setMembres([creerMembre(1, 'Moi', '', 'homme')]);
-    setNextId(2);
-    setCentreId(1);
-    setHistorique([]);
   };
 
   const membresFiltres = membres.filter(m =>
@@ -220,7 +255,7 @@ export default function ArbreAnime() {
         </div>
         <div className="carte-body">
           <div className="carte-nom">{m.prenom} {m.nom}</div>
-          {m.annee&&<div className="carte-an">{m.annee}{m.statut==='decede'?' – †':''}</div>}
+          {m.annee&&<div className="carte-an">{m.annee}{m.decede?' – †':''}</div>}
           {!isCenter && <div className="carte-nav-hint">Cliquer pour naviguer →</div>}
         </div>
         <button className="carte-edit" onClick={e=>{e.stopPropagation(); ouvrirEdit(m);}}>✏️</button>
@@ -228,18 +263,62 @@ export default function ArbreAnime() {
     );
   };
 
-  if (!centre) return <div>Chargement...</div>;
+  if (chargement) return <div className="arbre-page"><p style={{padding:'2rem'}}>⏳ Chargement de l'arbre...</p></div>;
 
-  const parents = centre.parentIds.map(get).filter(Boolean);
+  if (!centre) {
+    return (
+      <div className="arbre-page">
+        <div className="arbre-head">
+          <div className="arbre-head-left">
+            <h2>🌳 Arbre généalogique</h2>
+            <p>Aucun membre pour l'instant</p>
+          </div>
+        </div>
+        <div style={{textAlign:'center', padding:'3rem'}}>
+          <button className="btn-inviter" onClick={()=>{ setFd({nom:'',prenom:'',genre:'homme',date_naissance:'',statut:'vivant'}); setForm({type:'racine', refId:null}); }}>
+            + Commencer l'arbre
+          </button>
+        </div>
+        {form && (
+          <div className="ov" onClick={()=>setForm(null)}>
+            <div className="mod" onClick={e=>e.stopPropagation()}>
+              <button className="xbtn" onClick={()=>setForm(null)}>✕</button>
+              <h3>➕ Premier membre</h3>
+              <div className="fg"><label>Prénom</label>
+                <input value={fd.prenom} onChange={e=>setFd({...fd,prenom:e.target.value})} placeholder="Prénom" autoFocus/>
+              </div>
+              <div className="fg"><label>Nom</label>
+                <input value={fd.nom} onChange={e=>setFd({...fd,nom:e.target.value})} placeholder="Nom de famille"/>
+              </div>
+              <div className="fg"><label>Genre</label>
+                <select value={fd.genre} onChange={e=>setFd({...fd,genre:e.target.value})}>
+                  <option value="homme">Homme</option>
+                  <option value="femme">Femme</option>
+                  <option value="autre">Autre</option>
+                </select>
+              </div>
+              <div className="fbtns">
+                <button onClick={()=>setForm(null)}>Annuler</button>
+                <button className="ok" onClick={ajouter} disabled={!fd.nom&&!fd.prenom}>Ajouter</button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  const parents = [centre.pereId, centre.mereId].map(get).filter(Boolean);
   const conjoints = centre.conjointIds.map(get).filter(Boolean);
-  const enfants = centre.enfantIds.map(get).filter(Boolean);
-  const hasPere = parents.some(p=>p.genre==='homme');
-  const hasMere = parents.some(p=>p.genre==='femme');
-  const freresSoeurs = membres.filter(m =>
-    m.id !== centreId &&
-    m.parentIds.length > 0 &&
-    m.parentIds.some(pid => centre.parentIds.includes(pid))
-  );
+  const enfants = membres.filter(m => m.pereId === centre.id || m.mereId === centre.id);
+  const hasPere = !!centre.pereId;
+  const hasMere = !!centre.mereId;
+  const freresSoeurs = membres.filter(m => {
+    if (m.id === centre.id) return false;
+    const memePere = centre.pereId && m.pereId === centre.pereId;
+    const memeMere = centre.mereId && m.mereId === centre.mereId;
+    return memePere || memeMere;
+  });
 
   return (
     <div className="arbre-page">
@@ -247,11 +326,10 @@ export default function ArbreAnime() {
       <div className="arbre-head">
         <div className="arbre-head-left">
           <h2>🌳 Arbre généalogique</h2>
-          <p>{membres.length} membre{membres.length>1?'s':''} · ✅ sauvegardé</p>
+          <p>{membres.length} membre{membres.length>1?'s':''} · ☁️ sauvegardé sur Supabase</p>
         </div>
         <div className="arbre-head-right">
           <button className="btn-recherche" onClick={()=>setShowRecherche(!showRecherche)}>🔍</button>
-          <button className="btn-reset" onClick={reinitialiser}>🗑️ Réinitialiser</button>
         </div>
       </div>
 
@@ -368,10 +446,11 @@ export default function ArbreAnime() {
               <select value={fd.genre} onChange={e=>setFd({...fd,genre:e.target.value})}>
                 <option value="homme">Homme</option>
                 <option value="femme">Femme</option>
+                <option value="autre">Autre</option>
               </select>
             </div>
-            <div className="fg"><label>Année de naissance</label>
-              <input value={fd.annee} onChange={e=>setFd({...fd,annee:e.target.value})} placeholder="ex: 1980"/>
+            <div className="fg"><label>Date de naissance</label>
+              <input type="date" value={fd.date_naissance} onChange={e=>setFd({...fd,date_naissance:e.target.value})}/>
             </div>
             <div className="fg"><label>Statut</label>
               <select value={fd.statut} onChange={e=>setFd({...fd,statut:e.target.value})}>
@@ -415,10 +494,11 @@ export default function ArbreAnime() {
               <select value={fdEdit.genre||'homme'} onChange={e=>setFdEdit({...fdEdit,genre:e.target.value})}>
                 <option value="homme">Homme</option>
                 <option value="femme">Femme</option>
+                <option value="autre">Autre</option>
               </select>
             </div>
-            <div className="fg"><label>Année de naissance</label>
-              <input value={fdEdit.annee||''} onChange={e=>setFdEdit({...fdEdit,annee:e.target.value})} placeholder="ex: 1980"/>
+            <div className="fg"><label>Date de naissance</label>
+              <input type="date" value={fdEdit.date_naissance||''} onChange={e=>setFdEdit({...fdEdit,date_naissance:e.target.value})}/>
             </div>
             <div className="fg"><label>Statut</label>
               <select value={fdEdit.statut||'vivant'} onChange={e=>setFdEdit({...fdEdit,statut:e.target.value})}>

@@ -1,13 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Sante.css';
+import { supabase } from './supabaseClient';
 
-const membresInitiaux = [
-  { id: 1, nom: 'Moussa Diallo', avatar: '👴', sang: 'O+', maladie: 'Aucune', allergie: 'Aucune', traitement: 'Aucun', medecin: 'Dr. Diop', urgence: '+221 77 000 00 00' },
-  { id: 2, nom: 'Fatoumata Diallo', avatar: '👵', sang: 'A+', maladie: 'Diabète', allergie: 'Aucune', traitement: 'Metformine', medecin: 'Dr. Fall', urgence: '+221 77 000 00 01' },
-  { id: 3, nom: 'Ibrahim Diallo', avatar: '👨', sang: 'B+', maladie: 'Aucune', allergie: 'Pénicilline', traitement: 'Aucun', medecin: 'Dr. Martin', urgence: '+33 6 00 00 00 00' },
-  { id: 4, nom: 'Aminata Diallo', avatar: '👩', sang: 'AB+', maladie: 'Aucune', allergie: 'Aucune', traitement: 'Aucun', medecin: 'Dr. Smith', urgence: '+1 000 000 0000' },
-  { id: 5, nom: 'Ousmane Diallo', avatar: '🧒', sang: 'O+', maladie: 'Drépanocytose', allergie: 'Aucune', traitement: 'Hydroxyurée', medecin: 'Dr. Camara', urgence: '+224 00 00 00 00' },
-];
+const membresInitiaux = [];
 
 const groupesSanguins = {
   'O+': { compatible: ['O+', 'A+', 'B+', 'AB+'], description: 'Donneur universel positif' },
@@ -22,6 +17,56 @@ const groupesSanguins = {
 
 function Sante() {
   const [membres, setMembres] = useState(membresInitiaux);
+
+  useEffect(() => {
+    async function chargerSante() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: profil } = await supabase
+        .from('profils')
+        .select('famille_id')
+        .eq('id', user.id)
+        .single();
+
+      if (!profil?.famille_id) return;
+
+      const { data: membresFamille, error: errM } = await supabase
+        .from('membres')
+        .select('id, prenom, nom')
+        .eq('famille_id', profil.famille_id);
+
+      if (errM) { console.error('Erreur chargement membres (santé) :', errM); return; }
+
+      const { data: fichesSante, error: errF } = await supabase
+        .from('sante_familiale')
+        .select('*')
+        .eq('famille_id', profil.famille_id);
+
+      if (errF) console.error('Erreur chargement fiches santé :', errF);
+
+      if (membresFamille) {
+        const fusionnes = membresFamille.map(m => {
+          const fiche = fichesSante?.find(f => f.membre_id === m.id) || {};
+          return {
+            id: m.id,
+            nom: `${m.prenom} ${m.nom}`,
+            avatar: '👤',
+            sang: fiche.groupe_sanguin || 'Inconnu',
+            maladie: fiche.maladie_hereditaire || 'Aucune',
+            allergie: fiche.allergie || 'Aucune',
+            traitement: fiche.traitement || 'Aucun',
+            medecin: fiche.medecin || '',
+            urgence: fiche.contact_urgence || '',
+            ficheId: fiche.id || null,
+          };
+        });
+        setMembres(fusionnes);
+      }
+    }
+    chargerSante();
+  }, []);
+
   const [membreSelectionne, setMembreSelectionne] = useState(null);
   const [onglet, setOnglet] = useState('apercu');
   const [showForm, setShowForm] = useState(false);
@@ -41,7 +86,7 @@ function Sante() {
   const membresMaladies = membres.filter(m => m.maladie !== 'Aucune');
   const membresAllergies = membres.filter(m => m.allergie !== 'Aucune');
 
-  return (
+ return (
     <div className="sante-page">
 
       {/* TABS */}
