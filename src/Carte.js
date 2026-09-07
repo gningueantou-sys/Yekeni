@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Circle } from 'react-leaflet';
+import React, { useState, useEffect } from 'react';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { supabase } from './supabaseClient';
 import './Carte.css';
 
 // Fix icônes Leaflet
@@ -12,17 +13,38 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
-const membresInitiaux = [
-  { id: 1, nom: 'Moussa Diallo', avatar: '👴', ville: 'Dakar', pays: 'Sénégal', lat: 14.6937, lng: -17.4441, genre: 'homme', role: 'Grand-père' },
-  { id: 2, nom: 'Fatoumata Diallo', avatar: '👵', ville: 'Dakar', pays: 'Sénégal', lat: 14.6837, lng: -17.4541, genre: 'femme', role: 'Grand-mère' },
-  { id: 3, nom: 'Ibrahim Diallo', avatar: '👨', ville: 'Paris', pays: 'France', lat: 48.8566, lng: 2.3522, genre: 'homme', role: 'Père' },
-  { id: 4, nom: 'Aminata Diallo', avatar: '👩', ville: 'New York', pays: 'USA', lat: 40.7128, lng: -74.0060, genre: 'femme', role: 'Mère' },
-  { id: 5, nom: 'Ousmane Diallo', avatar: '🧒', ville: 'Conakry', pays: 'Guinée', lat: 9.6412, lng: -13.5784, genre: 'homme', role: 'Fils' },
-  { id: 6, nom: 'Mariam Diallo', avatar: '👧', ville: 'Abidjan', pays: "Côte d'Ivoire", lat: 5.3600, lng: -4.0083, genre: 'femme', role: 'Fille' },
-];
+// Cache de géocodage (ville+pays -> lat/lng) pour éviter de re-interroger
+// le service de géocodage à chaque chargement de la carte
+const GEOCODE_CACHE_KEY = 'yekeni_geocode_cache';
+const chargerCacheGeo = () => {
+  try { return JSON.parse(localStorage.getItem(GEOCODE_CACHE_KEY) || '{}'); } catch (e) { return {}; }
+};
+const sauvegarderCacheGeo = (cache) => {
+  try { localStorage.setItem(GEOCODE_CACHE_KEY, JSON.stringify(cache)); } catch (e) {}
+};
 
-function createIcon(avatar, genre) {
-  const couleur = genre === 'homme' ? '#00BCD4' : '#E91E63';
+async function geocoder(ville, pays, cache) {
+  const cle = `${ville}|${pays}`.toLowerCase();
+  if (cache[cle]) return cache[cle];
+  try {
+    const q = encodeURIComponent(`${ville}, ${pays}`);
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${q}`);
+    const data = await res.json();
+    if (data && data[0]) {
+      const coords = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+      cache[cle] = coords;
+      sauvegarderCacheGeo(cache);
+      return coords;
+    }
+  } catch (e) {
+    console.error('Erreur géocodage', ville, pays, e);
+  }
+  return null;
+}
+
+function createIcon(genre) {
+  const couleur = genre === 'homme' ? '#00BCD4' : genre === 'femme' ? '#E91E63' : '#9E9E9E';
+  const emoji = genre === 'homme' ? '👨' : genre === 'femme' ? '👩' : '🧑';
   return L.divIcon({
     html: `
       <div style="
@@ -34,7 +56,7 @@ function createIcon(avatar, genre) {
         box-shadow: 0 3px 10px rgba(0,0,0,0.3);
         display: flex; align-items: center; justify-content: center;
       ">
-        <span style="transform: rotate(45deg); font-size: 20px;">${avatar}</span>
+        <span style="transform: rotate(45deg); font-size: 20px;">${emoji}</span>
       </div>
     `,
     className: '',
@@ -45,15 +67,69 @@ function createIcon(avatar, genre) {
 }
 
 function Carte() {
-  const [membres] = useState(membresInitiaux);
+  const [membres, setMembres] = useState([]);
+  const [nonLocalises, setNonLocalises] = useState([]);
+  const [chargement, setChargement] = useState(true);
   const [membreSelectionne, setMembreSelectionne] = useState(null);
   const [filtre, setFiltre] = useState('tous');
+
+  useEffect(() => {
+    async function charger() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { setChargement(false); return; }
+
+      const { data: profil } = await supabase
+        .from('profils')
+        .select('famille_id')
+        .eq('id', user.id)
+        .single();
+
+      if (!profil?.famille_id) { setChargement(false); return; }
+
+      const { data, error } = await supabase
+        .from('membres')
+        .select('id, prenom, nom, genre, ville, pays, profession')
+        .eq('famille_id', profil.famille_id);
+
+      if (error) { console.error('Erreur chargement carte :', error); setChargement(false); return; }
+
+      const cache = chargerCacheGeo();
+      const localises = [];
+      const sansLieu = [];
+
+      for (const r of (data || [])) {
+        const nom = r.prenom ? `${r.prenom} ${r.nom}` : r.nom;
+        if (r.ville && r.pays) {
+          const coords = await geocoder(r.ville, r.pays, cache);
+          if (coords) {
+            localises.push({
+              id: r.id, nom, genre: r.genre, ville: r.ville, pays: r.pays,
+              profession: r.profession || '', lat: coords.lat, lng: coords.lng,
+            });
+          } else {
+            sansLieu.push({ id: r.id, nom, ville: r.ville, pays: r.pays });
+          }
+        } else {
+          sansLieu.push({ id: r.id, nom, ville: r.ville, pays: r.pays });
+        }
+      }
+
+      setMembres(localises);
+      setNonLocalises(sansLieu);
+      setChargement(false);
+    }
+    charger();
+  }, []);
 
   const membresFiltres = filtre === 'tous'
     ? membres
     : membres.filter(m => m.genre === filtre);
 
   const pays = [...new Set(membres.map(m => m.pays))];
+
+  if (chargement) {
+    return <div className="carte-page"><p style={{padding:'2rem'}}>⏳ Localisation des membres en cours...</p></div>;
+  }
 
   return (
     <div className="carte-page">
@@ -64,7 +140,7 @@ function Carte() {
           <span>👥</span>
           <div>
             <h3>{membres.length}</h3>
-            <p>Membres</p>
+            <p>Membres localisés</p>
           </div>
         </div>
         <div className="carte-stat-card">
@@ -80,14 +156,6 @@ function Carte() {
             <h3>{[...new Set(membres.map(m => m.ville))].length}</h3>
             <p>Villes</p>
           </div>
-        </div>
-        <div className="carte-stat-card premium">
-          <span>💎</span>
-          <div>
-            <h3>Premium</h3>
-            <p>Carte complète</p>
-          </div>
-          <span className="badge-premium">🔒</span>
         </div>
       </div>
 
@@ -122,26 +190,18 @@ function Carte() {
               <Marker
                 key={m.id}
                 position={[m.lat, m.lng]}
-                icon={createIcon(m.avatar, m.genre)}
+                icon={createIcon(m.genre)}
                 eventHandlers={{ click: () => setMembreSelectionne(m) }}
               >
                 <Popup>
                   <div className="popup-content">
-                    <div className="popup-avatar">{m.avatar}</div>
                     <h4>{m.nom}</h4>
-                    <p>{m.role}</p>
+                    {m.profession && <p>{m.profession}</p>}
                     <p>📍 {m.ville}, {m.pays}</p>
                   </div>
                 </Popup>
               </Marker>
             ))}
-
-            {/* Cercle autour de Dakar */}
-            <Circle
-              center={[14.6937, -17.4441]}
-              radius={50000}
-              pathOptions={{ color: '#2D6A4F', fillColor: '#2D6A4F', fillOpacity: 0.1 }}
-            />
           </MapContainer>
         </div>
 
@@ -161,29 +221,36 @@ function Carte() {
                   className={`membre-location ${membreSelectionne?.id === m.id ? 'actif' : ''}`}
                   onClick={() => setMembreSelectionne(m)}
                 >
-                  <span className="membre-loc-avatar">{m.avatar}</span>
                   <div>
                     <p className="membre-loc-nom">{m.nom}</p>
                     <p className="membre-loc-ville">📍 {m.ville}</p>
                   </div>
                   <span className={`genre-badge ${m.genre}`}>
-                    {m.genre === 'homme' ? '♂' : '♀'}
+                    {m.genre === 'homme' ? '♂' : m.genre === 'femme' ? '♀' : '·'}
                   </span>
                 </div>
               ))}
             </div>
           ))}
+          {membres.length === 0 && (
+            <p style={{color:'#888', fontSize:'.85rem'}}>Aucun membre localisé pour l'instant — renseigne une ville et un pays sur la page Membres.</p>
+          )}
         </div>
       </div>
+
+      {nonLocalises.length > 0 && (
+        <p style={{color:'#888', fontSize:'.85rem', marginTop:'1rem'}}>
+          {nonLocalises.length} membre{nonLocalises.length>1?'s':''} n'{nonLocalises.length>1?'ont':'a'} pas pu être placé{nonLocalises.length>1?'s':''} sur la carte : {nonLocalises.map(m=>m.nom).join(', ')} (ville/pays manquant ou introuvable).
+        </p>
+      )}
 
       {/* DETAIL MEMBRE */}
       {membreSelectionne && (
         <div className="membre-detail-carte">
           <div className="detail-header">
-            <span>{membreSelectionne.avatar}</span>
             <div>
               <h3>{membreSelectionne.nom}</h3>
-              <p>{membreSelectionne.role} — {membreSelectionne.ville}, {membreSelectionne.pays}</p>
+              <p>{membreSelectionne.profession ? `${membreSelectionne.profession} — ` : ''}{membreSelectionne.ville}, {membreSelectionne.pays}</p>
             </div>
             <button onClick={() => setMembreSelectionne(null)}>✕</button>
           </div>
