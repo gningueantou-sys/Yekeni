@@ -1,22 +1,26 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { supabase } from './supabaseClient';
 import './Chat.css';
-
-const messagesInitiaux = [
-  { id: 1, auteur: 'Moussa Diallo', avatar: '👴', texte: 'Bonjour la famille ! Que Allah vous bénisse tous ! 🌳', heure: '09:00', moi: false },
-  { id: 2, auteur: 'Fatoumata Diallo', avatar: '👵', texte: 'Bonjour Papa ! Comment tu vas ce matin ?', heure: '09:05', moi: false },
-  { id: 3, auteur: 'Ibrahim Diallo', avatar: '👨', texte: 'Salam aleikoum la famille ! Je pense à vous depuis Paris ❤️', heure: '09:10', moi: false },
-  { id: 4, auteur: 'Moi', avatar: '🧒', texte: 'Aleikoum salam ! Tout va bien Alhamdoulilah 😊', heure: '09:15', moi: true },
-  { id: 5, auteur: 'Aminata Diallo', avatar: '👩', texte: 'Bonjour à tous ! N\'oubliez pas l\'anniversaire de Grand-père dans 3 jours 🎂', heure: '09:20', moi: false },
-  { id: 6, auteur: 'Moussa Diallo', avatar: '👴', texte: 'Merci ma fille ! Vous êtes tous invités à la maison 🏡', heure: '09:25', moi: false },
-];
 
 const reactions = ['❤️', '😂', '😮', '🙏', '👍', '🎉'];
 
+const messagesRapides = [
+  'Alhamdoulilah ! 🙏',
+  'Je pense à vous ❤️',
+  'Bonne journée à tous ! ☀️',
+  'Salam aleikoum ! 🌙',
+];
+
 function Chat() {
-  const [messages, setMessages] = useState(messagesInitiaux);
+  const [messages, setMessages] = useState([]);
+  const [chargement, setChargement] = useState(true);
+  const [familleId, setFamilleId] = useState(null);
+  const [monUserId, setMonUserId] = useState(null);
+  const [nombreMembres, setNombreMembres] = useState(0);
   const [nouveau, setNouveau] = useState('');
   const [showReactions, setShowReactions] = useState(null);
   const messagesEndRef = useRef(null);
+  const profilsMapRef = useRef({});
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -26,18 +30,96 @@ function Chat() {
     scrollToBottom();
   }, [messages]);
 
-  const envoyerMessage = () => {
-    if (!nouveau.trim()) return;
-    const msg = {
-      id: messages.length + 1,
-      auteur: 'Moi',
-      avatar: '🧒',
-      texte: nouveau,
-      heure: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
-      moi: true
+  const mapRow = (row, monId) => {
+    const profil = profilsMapRef.current[row.auteur_id];
+    return {
+      id: row.id,
+      auteur: profil?.nom_complet || 'Membre',
+      avatarUrl: profil?.avatar_url || null,
+      texte: row.texte,
+      heure: new Date(row.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+      moi: row.auteur_id === monId,
+      reactions: row.reactions || {},
     };
-    setMessages([...messages, msg]);
+  };
+
+  useEffect(() => {
+    let canal;
+
+    async function init() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { setChargement(false); return; }
+      setMonUserId(user.id);
+
+      const { data: profil, error: err1 } = await supabase
+        .from('profils')
+        .select('famille_id')
+        .eq('id', user.id)
+        .single();
+
+      if (err1 || !profil?.famille_id) { setChargement(false); return; }
+      setFamilleId(profil.famille_id);
+
+      const { data: profilsFamille } = await supabase
+        .from('profils')
+        .select('id, nom_complet, avatar_url')
+        .eq('famille_id', profil.famille_id);
+
+      const map = {};
+      (profilsFamille || []).forEach(p => { map[p.id] = p; });
+      profilsMapRef.current = map;
+      setNombreMembres(profilsFamille?.length || 0);
+
+      const { data: messagesData, error: err2 } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('famille_id', profil.famille_id)
+        .order('created_at', { ascending: true })
+        .limit(200);
+
+      if (err2) console.error('Erreur chargement messages :', err2);
+      setMessages((messagesData || []).map(r => mapRow(r, user.id)));
+      setChargement(false);
+
+      // Temps réel : nouveaux messages et mises à jour de réactions
+      canal = supabase
+        .channel(`messages-${profil.famille_id}`)
+        .on('postgres_changes', {
+          event: 'INSERT', schema: 'public', table: 'messages',
+          filter: `famille_id=eq.${profil.famille_id}`,
+        }, (payload) => {
+          setMessages(prev => [...prev, mapRow(payload.new, user.id)]);
+        })
+        .on('postgres_changes', {
+          event: 'UPDATE', schema: 'public', table: 'messages',
+          filter: `famille_id=eq.${profil.famille_id}`,
+        }, (payload) => {
+          setMessages(prev => prev.map(m => m.id === payload.new.id ? mapRow(payload.new, user.id) : m));
+        })
+        .subscribe();
+    }
+
+    init();
+
+    return () => { if (canal) supabase.removeChannel(canal); };
+  }, []);
+
+  const envoyerMessage = async () => {
+    if (!nouveau.trim() || !familleId || !monUserId) return;
+    const texte = nouveau;
     setNouveau('');
+
+    const { error } = await supabase.from('messages').insert({
+      famille_id: familleId,
+      auteur_id: monUserId,
+      texte,
+    });
+
+    if (error) {
+      alert("Erreur lors de l'envoi : " + error.message);
+      setNouveau(texte);
+    }
+    // Le message apparaît via l'abonnement temps réel, pas besoin de l'ajouter ici.
   };
 
   const handleKeyPress = (e) => {
@@ -47,23 +129,20 @@ function Chat() {
     }
   };
 
-  const ajouterReaction = (msgId, reaction) => {
-    setMessages(messages.map(m => {
-      if (m.id === msgId) {
-        const reactions = m.reactions || {};
-        return { ...m, reactions: { ...reactions, [reaction]: (reactions[reaction] || 0) + 1 } };
-      }
-      return m;
-    }));
+  const ajouterReaction = async (msgId, reaction) => {
+    const msg = messages.find(m => m.id === msgId);
+    if (!msg) return;
+    const nouvellesReactions = { ...msg.reactions, [reaction]: (msg.reactions[reaction] || 0) + 1 };
+
+    const { error } = await supabase.from('messages').update({ reactions: nouvellesReactions }).eq('id', msgId);
+    if (error) console.error('Erreur réaction :', error);
     setShowReactions(null);
+    // La mise à jour visible vient aussi de l'abonnement temps réel.
   };
 
-  const messagesRapides = [
-    'Alhamdoulilah ! 🙏',
-    'Je pense à vous ❤️',
-    'Bonne journée à tous ! ☀️',
-    'Salam aleikoum ! 🌙',
-  ];
+  if (chargement) {
+    return <div className="chat-page"><p style={{padding:'2rem'}}>⏳ Chargement du chat...</p></div>;
+  }
 
   return (
     <div className="chat-page">
@@ -73,15 +152,9 @@ function Chat() {
         <div className="chat-header-info">
           <div className="chat-famille-avatar">👨‍👩‍👧‍👦</div>
           <div>
-            <h2>Famille Diallo</h2>
-            <p>5 membres · 3 en ligne</p>
+            <h2>Chat familial</h2>
+            <p>{nombreMembres} membre{nombreMembres>1?'s':''}</p>
           </div>
-        </div>
-        <div className="membres-en-ligne">
-          {['👴', '👵', '👨'].map((a, i) => (
-            <span key={i} className="avatar-ligne">{a}</span>
-          ))}
-          <span className="en-ligne-texte">en ligne</span>
         </div>
       </div>
 
@@ -90,7 +163,11 @@ function Chat() {
         <div className="chat-date">Aujourd'hui</div>
         {messages.map(m => (
           <div key={m.id} className={`message-wrapper ${m.moi ? 'moi' : ''}`}>
-            {!m.moi && <span className="msg-avatar">{m.avatar}</span>}
+            {!m.moi && (
+              m.avatarUrl
+                ? <img src={m.avatarUrl} alt={m.auteur} className="msg-avatar" style={{objectFit:'cover'}}/>
+                : <span className="msg-avatar">👤</span>
+            )}
             <div className="message-bubble-wrapper">
               {!m.moi && <p className="msg-nom">{m.auteur}</p>}
               <div
@@ -118,6 +195,9 @@ function Chat() {
             </div>
           </div>
         ))}
+        {messages.length === 0 && (
+          <p style={{textAlign:'center', color:'#888', padding:'2rem'}}>Aucun message pour l'instant — dis bonjour à la famille !</p>
+        )}
         <div ref={messagesEndRef} />
       </div>
 
