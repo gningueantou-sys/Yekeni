@@ -1,81 +1,157 @@
 import React, { useState, useEffect } from 'react';
+import { supabase } from './supabaseClient';
 import './Memoire.css';
 
-const STORAGE_SOU = 'yekeni_souvenirs';
-const STORAGE_TRAD = 'yekeni_traditions';
-
-const souvenirsDef = [
-  { id:1, titre:'Mariage de Papa et Maman', annee:'1985', categorie:'Mariage', emoji:'💒', description:'Le plus beau jour de notre famille. Célébrée à Dakar avec toute la famille.', auteur:'Moussa Diallo', likes:12 },
-  { id:2, titre:'Naissance de Ibrahim', annee:'1990', categorie:'Naissance', emoji:'👶', description:"Ibrahim est né un mardi matin à l'hôpital Principal de Dakar.", auteur:'Fatoumata Diallo', likes:8 },
-  { id:3, titre:'Baptême de Mariam', annee:'2005', categorie:'Baptême', emoji:'🙏', description:'Un baptême magnifique avec toute la famille réunie.', auteur:'Ibrahim Diallo', likes:15 },
-  { id:4, titre:"Diplôme d'Aminata", annee:'2015', categorie:'Accomplissement', emoji:'🎓', description:'Aminata a obtenu son doctorat en médecine. Fierté de toute la famille !', auteur:'Aminata Diallo', likes:20 },
-  { id:5, titre:'Réunion familiale à Touba', annee:'2019', categorie:'Réunion', emoji:'🌴', description:'Toute la famille réunie à Touba pour le Grand Magal.', auteur:'Ousmane Diallo', likes:25 },
-  { id:6, titre:'Maison familiale de Dakar', annee:'1970', categorie:'Patrimoine', emoji:'🏡', description:'Notre maison familiale construite par Grand-père.', auteur:'Moussa Diallo', likes:30 },
-];
-
-const traditionsDef = [
-  { id:1, titre:'Thiéboudienne du dimanche', categorie:'Cuisine', emoji:'🍚', description:'Chaque dimanche, Grand-mère prépare le thiéboudienne pour toute la famille. Cette tradition dure depuis plus de 40 ans.' },
-  { id:2, titre:'Prière du Vendredi', categorie:'Religion', emoji:'🕌', description:'Tous les hommes de la famille se retrouvent à la mosquée du quartier chaque vendredi midi.' },
-  { id:3, titre:'Récit des ancêtres', categorie:'Histoire orale', emoji:'📖', description:"Grand-père raconte chaque soir l'histoire de nos ancêtres, leurs voyages et leurs accomplissements." },
-  { id:4, titre:'Korité en famille', categorie:'Fête', emoji:'🎉', description:'La fête de fin du Ramadan réunit toute la famille. Chacun porte ses plus beaux habits.' },
-];
-
-const charger = (key, def) => {
-  try {
-    const saved = localStorage.getItem(key);
-    if (saved) return JSON.parse(saved);
-  } catch(e) {}
-  return def;
-};
-
 const categories = ['Tous','Mariage','Naissance','Baptême','Accomplissement','Réunion','Patrimoine'];
+const emojisS = ['💒','👶','🙏','🎓','🌴','🏡','🎉','📸','🎵','🏆','✈️','🌍'];
+const emojisT = ['🍚','🕌','📖','🎉','💃','🥁','🌴','🏡','🎵','🙏','👗','🌍'];
+
+const fdSouvenirVide = { titre:'', annee:'', categorie:'Mariage', emoji:'📸', description:'' };
+const fdTraditionVide = { titre:'', categorie:'Cuisine', emoji:'🍚', description:'' };
+
+const mapSouvenir = (r) => ({
+  id: r.id,
+  titre: r.titre,
+  annee: r.annee || '',
+  categorie: r.categorie || '',
+  emoji: r.emoji || '📸',
+  description: r.description || '',
+  auteur: r.profils?.nom_complet || 'Membre',
+  likes: r.likes || 0,
+});
+
+const mapTradition = (r) => ({
+  id: r.id,
+  titre: r.titre,
+  categorie: r.categorie || '',
+  emoji: r.emoji || '📖',
+  description: r.description || '',
+});
 
 export default function Memoire() {
+  const [chargement, setChargement] = useState(true);
+  const [familleId, setFamilleId] = useState(null);
+  const [familleNom, setFamilleNom] = useState('');
+  const [familleDescription, setFamilleDescription] = useState('');
   const [onglet, setOnglet] = useState('souvenirs');
   const [categorie, setCategorie] = useState('Tous');
-  const [souvenirs, setSouvenirs] = useState(()=>charger(STORAGE_SOU, souvenirsDef));
-  const [traditions, setTraditions] = useState(()=>charger(STORAGE_TRAD, traditionsDef));
+  const [souvenirs, setSouvenirs] = useState([]);
+  const [traditions, setTraditions] = useState([]);
   const [souvenirSel, setSouvenirSel] = useState(null);
   const [showFormSou, setShowFormSou] = useState(false);
   const [showFormTrad, setShowFormTrad] = useState(false);
-  const [nouveau, setNouveau] = useState({ titre:'', annee:'', categorie:'Mariage', emoji:'📸', description:'', auteur:'' });
-  const [nouvTrad, setNouvTrad] = useState({ titre:'', categorie:'Cuisine', emoji:'🍚', description:'' });
+  const [nouveau, setNouveau] = useState(fdSouvenirVide);
+  const [nouvTrad, setNouvTrad] = useState(fdTraditionVide);
 
-  useEffect(()=>{ try { localStorage.setItem(STORAGE_SOU, JSON.stringify(souvenirs)); } catch(e){} }, [souvenirs]);
-  useEffect(()=>{ try { localStorage.setItem(STORAGE_TRAD, JSON.stringify(traditions)); } catch(e){} }, [traditions]);
+  useEffect(() => {
+    async function charger() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { setChargement(false); return; }
+
+      const { data: profil, error: errProfil } = await supabase
+        .from('profils')
+        .select('famille_id')
+        .eq('id', user.id)
+        .single();
+
+      if (errProfil || !profil?.famille_id) { setChargement(false); return; }
+      setFamilleId(profil.famille_id);
+
+      const [{ data: famille }, { data: souvenirsData, error: errSou }, { data: traditionsData, error: errTrad }] = await Promise.all([
+        supabase.from('familles').select('nom, description').eq('id', profil.famille_id).single(),
+        supabase.from('souvenirs').select('*, profils(nom_complet)').eq('famille_id', profil.famille_id).order('created_at', { ascending: false }),
+        supabase.from('traditions').select('*').eq('famille_id', profil.famille_id).order('created_at', { ascending: false }),
+      ]);
+
+      if (errSou) console.error('Erreur chargement souvenirs :', errSou);
+      if (errTrad) console.error('Erreur chargement traditions :', errTrad);
+
+      setFamilleNom(famille?.nom || '');
+      setFamilleDescription(famille?.description || '');
+      setSouvenirs((souvenirsData || []).map(mapSouvenir));
+      setTraditions((traditionsData || []).map(mapTradition));
+      setChargement(false);
+    }
+    charger();
+  }, []);
 
   const souvenirsFiltres = souvenirs.filter(s => categorie === 'Tous' || s.categorie === categorie);
 
-  const ajouterSouvenir = () => {
-    if (!nouveau.titre) return;
-    setSouvenirs([...souvenirs, { ...nouveau, id: Date.now(), likes: 0 }]);
+  const ajouterSouvenir = async () => {
+    if (!nouveau.titre || !familleId) return;
+    const { data: { user } } = await supabase.auth.getUser();
+
+    const { data, error } = await supabase
+      .from('souvenirs')
+      .insert({
+        famille_id: familleId,
+        auteur_id: user?.id || null,
+        titre: nouveau.titre,
+        annee: nouveau.annee || null,
+        categorie: nouveau.categorie,
+        emoji: nouveau.emoji,
+        description: nouveau.description || null,
+      })
+      .select('*, profils(nom_complet)')
+      .single();
+
+    if (error) { alert("Erreur lors de l'ajout : " + error.message); return; }
+
+    setSouvenirs([mapSouvenir(data), ...souvenirs]);
     setShowFormSou(false);
-    setNouveau({ titre:'', annee:'', categorie:'Mariage', emoji:'📸', description:'', auteur:'' });
+    setNouveau(fdSouvenirVide);
   };
 
-  const supprimerSouvenir = (id) => {
+  const supprimerSouvenir = async (id) => {
+    const { error } = await supabase.from('souvenirs').delete().eq('id', id);
+    if (error) { alert('Erreur lors de la suppression : ' + error.message); return; }
     setSouvenirs(souvenirs.filter(s => s.id !== id));
     setSouvenirSel(null);
   };
 
-  const ajouterTradition = () => {
-    if (!nouvTrad.titre) return;
-    setTraditions([...traditions, { ...nouvTrad, id: Date.now() }]);
+  const ajouterTradition = async () => {
+    if (!nouvTrad.titre || !familleId) return;
+
+    const { data, error } = await supabase
+      .from('traditions')
+      .insert({
+        famille_id: familleId,
+        titre: nouvTrad.titre,
+        categorie: nouvTrad.categorie,
+        emoji: nouvTrad.emoji,
+        description: nouvTrad.description || null,
+      })
+      .select()
+      .single();
+
+    if (error) { alert("Erreur lors de l'ajout : " + error.message); return; }
+
+    setTraditions([mapTradition(data), ...traditions]);
     setShowFormTrad(false);
-    setNouvTrad({ titre:'', categorie:'Cuisine', emoji:'🍚', description:'' });
+    setNouvTrad(fdTraditionVide);
   };
 
-  const supprimerTradition = (id) => {
+  const supprimerTradition = async (id) => {
+    const { error } = await supabase.from('traditions').delete().eq('id', id);
+    if (error) { alert('Erreur lors de la suppression : ' + error.message); return; }
     setTraditions(traditions.filter(t => t.id !== id));
   };
 
-  const liker = (id) => {
-    setSouvenirs(souvenirs.map(s => s.id === id ? { ...s, likes: s.likes + 1 } : s));
-    if (souvenirSel?.id === id) setSouvenirSel(s => ({ ...s, likes: s.likes + 1 }));
+  const liker = async (id) => {
+    const s = souvenirs.find(x => x.id === id);
+    if (!s) return;
+    const nouvellesLikes = s.likes + 1;
+
+    const { error } = await supabase.from('souvenirs').update({ likes: nouvellesLikes }).eq('id', id);
+    if (error) { console.error('Erreur like :', error); return; }
+
+    setSouvenirs(souvenirs.map(x => x.id === id ? { ...x, likes: nouvellesLikes } : x));
+    if (souvenirSel?.id === id) setSouvenirSel(s2 => ({ ...s2, likes: nouvellesLikes }));
   };
 
-  const emojisS = ['💒','👶','🙏','🎓','🌴','🏡','🎉','📸','🎵','🏆','✈️','🌍'];
-  const emojisT = ['🍚','🕌','📖','🎉','💃','🥁','🌴','🏡','🎵','🙏','👗','🌍'];
+  if (chargement) {
+    return <div className="memoire-page"><p style={{padding:'2rem'}}>⏳ Chargement...</p></div>;
+  }
 
   return (
     <div className="memoire-page">
@@ -121,6 +197,9 @@ export default function Memoire() {
               </div>
             </div>
           </div>
+          {souvenirs.length === 0 && (
+            <p style={{color:'#888', fontSize:'.85rem', textAlign:'center', marginTop:'1rem'}}>Aucun souvenir partagé pour l'instant.</p>
+          )}
         </div>
       )}
 
@@ -154,6 +233,9 @@ export default function Memoire() {
               </div>
             </button>
           </div>
+          {traditions.length === 0 && (
+            <p style={{color:'#888', fontSize:'.85rem', textAlign:'center', marginTop:'1rem'}}>Aucune tradition documentée pour l'instant.</p>
+          )}
         </div>
       )}
 
@@ -161,26 +243,22 @@ export default function Memoire() {
         <div className="memoire-content">
           <div className="histoire-container">
             <div className="histoire-header">
-              <h2>🏛️ Histoire de la Famille Diallo</h2>
+              <h2>🏛️ Histoire de la {familleNom || 'famille'}</h2>
               <p>Transmise de génération en génération</p>
             </div>
-            <div className="timeline">
-              {[
-                { date:'1920', titre:'🌍 Origines', texte:"La famille Diallo trouve ses origines dans le Fouta Toro. Nos ancêtres étaient des éleveurs et commerçants respectés." },
-                { date:'1950', titre:'🏡 Installation à Dakar', texte:"L'arrière-grand-père Amadou Diallo s'installe à Dakar et construit la maison familiale qui existe encore aujourd'hui." },
-                { date:'1970', titre:'📚 Éducation', texte:"Grand-père Moussa fait de l'éducation une priorité. Tous ses enfants iront à l'école." },
-                { date:'1990', titre:'🌍 Diaspora', texte:"Les membres de la famille commencent à s'installer en France, aux USA et en Guinée." },
-                { date:'2025', titre:'🌳 Yëkëni', texte:"La famille Diallo rejoint Yëkëni pour préserver son histoire et rester connectée malgré la distance." },
-              ].map((item,i)=>(
-                <div className="timeline-item" key={i}>
-                  <div className="timeline-date">{item.date}</div>
-                  <div className="timeline-content">
-                    <h4>{item.titre}</h4>
-                    <p>{item.texte}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+            {familleDescription ? (
+              <div style={{
+                background:'#F0FDF4', border:'2px solid #2D6A4F', borderRadius:'14px',
+                padding:'1.5rem', fontSize:'1rem', lineHeight:'1.7', color:'#1B4332',
+              }}>
+                {familleDescription}
+              </div>
+            ) : (
+              <div style={{textAlign:'center', color:'#888', padding:'2rem'}}>
+                <p>Aucune description de famille renseignée pour l'instant.</p>
+                <p style={{fontSize:'.85rem'}}>Elle peut être ajoutée depuis la page de configuration de la famille.</p>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -234,9 +312,6 @@ export default function Memoire() {
             </div>
             <div className="form-group"><label>Description</label>
               <textarea placeholder="Racontez ce souvenir..." value={nouveau.description} onChange={e=>setNouveau({...nouveau,description:e.target.value})} rows={3} style={{resize:'none',fontFamily:'inherit',padding:'0.75rem 1rem',border:'2px solid #f0f0f0',borderRadius:'12px',outline:'none',fontSize:'0.95rem'}}/>
-            </div>
-            <div className="form-group"><label>Votre nom</label>
-              <input type="text" placeholder="ex: Moussa Diallo" value={nouveau.auteur} onChange={e=>setNouveau({...nouveau,auteur:e.target.value})}/>
             </div>
             <div className="form-buttons">
               <button className="btn-annuler" onClick={()=>setShowFormSou(false)}>Annuler</button>

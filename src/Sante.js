@@ -17,26 +17,40 @@ const groupesSanguins = {
 
 function Sante() {
   const [membres, setMembres] = useState(membresInitiaux);
+  const [familleId, setFamilleId] = useState(null);
+  const [monRole, setMonRole] = useState(null);
+  const [monUserId, setMonUserId] = useState(null);
 
   useEffect(() => {
     async function chargerSante() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
+      setMonUserId(user.id);
 
       const { data: profil } = await supabase
         .from('profils')
-        .select('famille_id')
+        .select('famille_id, role')
         .eq('id', user.id)
         .single();
 
       if (!profil?.famille_id) return;
+      setFamilleId(profil.famille_id);
+      setMonRole(profil.role);
 
       const { data: membresFamille, error: errM } = await supabase
         .from('membres')
-        .select('id, prenom, nom')
+        .select('id, prenom, nom, sante_visible')
         .eq('famille_id', profil.famille_id);
 
       if (errM) { console.error('Erreur chargement membres (santé) :', errM); return; }
+
+      const { data: profilsFamille } = await supabase
+        .from('profils')
+        .select('id, membre_id')
+        .eq('famille_id', profil.famille_id);
+
+      const profilParMembre = {};
+      (profilsFamille || []).forEach(p => { if (p.membre_id) profilParMembre[p.membre_id] = p.id; });
 
       const { data: fichesSante, error: errF } = await supabase
         .from('sante_familiale')
@@ -48,16 +62,20 @@ function Sante() {
       if (membresFamille) {
         const fusionnes = membresFamille.map(m => {
           const fiche = fichesSante?.find(f => f.membre_id === m.id) || {};
+          const proprietaireId = profilParMembre[m.id] || null;
+          const visible = m.sante_visible !== false || profil.role === 'admin' || proprietaireId === user.id;
           return {
             id: m.id,
             nom: `${m.prenom} ${m.nom}`,
             avatar: '👤',
-            sang: fiche.groupe_sanguin || 'Inconnu',
-            maladie: fiche.maladie_hereditaire || 'Aucune',
-            allergie: fiche.allergie || 'Aucune',
-            traitement: fiche.traitement || 'Aucun',
-            medecin: fiche.medecin || '',
-            urgence: fiche.contact_urgence || '',
+            visible,
+            proprietaireId,
+            sang: visible ? (fiche.groupe_sanguin || 'Inconnu') : '🔒',
+            maladie: visible ? (fiche.maladie_hereditaire || 'Aucune') : '🔒 Masqué',
+            allergie: visible ? (fiche.allergie || 'Aucune') : '🔒 Masqué',
+            traitement: visible ? (fiche.traitement || 'Aucun') : '🔒 Masqué',
+            medecin: visible ? (fiche.medecin || '') : '🔒 Masqué',
+            urgence: visible ? (fiche.contact_urgence || '') : '',
             ficheId: fiche.id || null,
           };
         });
@@ -77,9 +95,32 @@ function Sante() {
     setShowForm(true);
   };
 
-  const sauvegarderForm = () => {
-    setMembres(membres.map(m => m.id === formData.id ? formData : m));
-    if (membreSelectionne?.id === formData.id) setMembreSelectionne(formData);
+  const sauvegarderForm = async () => {
+    const payload = {
+      membre_id: formData.id,
+      famille_id: familleId,
+      groupe_sanguin: formData.sang,
+      maladie_hereditaire: formData.maladie,
+      allergie: formData.allergie,
+      traitement: formData.traitement,
+      medecin: formData.medecin,
+      contact_urgence: formData.urgence,
+    };
+
+    let ficheIdFinal = formData.ficheId;
+
+    if (formData.ficheId) {
+      const { error } = await supabase.from('sante_familiale').update(payload).eq('id', formData.ficheId);
+      if (error) { alert('Erreur lors de la sauvegarde : ' + error.message); return; }
+    } else {
+      const { data, error } = await supabase.from('sante_familiale').insert(payload).select().single();
+      if (error) { alert('Erreur lors de la sauvegarde : ' + error.message); return; }
+      ficheIdFinal = data.id;
+    }
+
+    const misAJour = { ...formData, ficheId: ficheIdFinal };
+    setMembres(membres.map(m => m.id === misAJour.id ? misAJour : m));
+    if (membreSelectionne?.id === misAJour.id) setMembreSelectionne(misAJour);
     setShowForm(false);
   };
 
@@ -189,9 +230,11 @@ function Sante() {
                     <h2>{membreSelectionne.nom}</h2>
                     <span className="fiche-sang">{membreSelectionne.sang}</span>
                   </div>
-                  <button className="btn-modifier" onClick={() => ouvrirForm(membreSelectionne)}>
-                    ✏️ Modifier
-                  </button>
+                  {(membreSelectionne.visible || membreSelectionne.proprietaireId === monUserId) && (
+                    <button className="btn-modifier" onClick={() => ouvrirForm(membreSelectionne)}>
+                      ✏️ Modifier
+                    </button>
+                  )}
                 </div>
                 <div className="fiche-infos">
                   <div className="fiche-row">
@@ -200,13 +243,13 @@ function Sante() {
                   </div>
                   <div className="fiche-row">
                     <span className="fiche-label">🧬 Maladie héréditaire</span>
-                    <span className={`fiche-value ${membreSelectionne.maladie !== 'Aucune' ? 'warning' : 'ok'}`}>
+                    <span className={`fiche-value ${membreSelectionne.maladie !== 'Aucune' && membreSelectionne.visible ? 'warning' : 'ok'}`}>
                       {membreSelectionne.maladie}
                     </span>
                   </div>
                   <div className="fiche-row">
                     <span className="fiche-label">💊 Allergie</span>
-                    <span className={`fiche-value ${membreSelectionne.allergie !== 'Aucune' ? 'warning' : 'ok'}`}>
+                    <span className={`fiche-value ${membreSelectionne.allergie !== 'Aucune' && membreSelectionne.visible ? 'warning' : 'ok'}`}>
                       {membreSelectionne.allergie}
                     </span>
                   </div>
@@ -224,7 +267,7 @@ function Sante() {
                   </div>
                 </div>
                 <div className="fiche-lock">
-                  🔒 Données chiffrées — Accès Admin uniquement
+                  {membreSelectionne.visible ? '🔒 Données chiffrées — Accès Admin uniquement' : '🔒 Ce membre a masqué ses données santé au reste de la famille'}
                 </div>
               </div>
             ) : (

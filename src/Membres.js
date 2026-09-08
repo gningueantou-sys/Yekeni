@@ -43,6 +43,8 @@ const fusionnerAvecExtras = (rows, extras, profilsParMembre) => rows.map(r => {
     pays: r.pays || '',
     profession: r.profession || '',
     telephone: r.telephone || '',
+    telephoneVisible: r.telephone_visible !== false,
+    santeVisible: r.sante_visible !== false,
     ...extrasParDefaut(),
     ...(extras[r.id] || {}),
     profilId: profil?.id || null,
@@ -208,6 +210,13 @@ export default function Membres() {
     alert('✅ Ton compte est maintenant relié à cette fiche !');
   };
 
+  // Seule la personne propriétaire de sa fiche peut changer sa propre visibilité
+  const toggleVisibilite = async (membreId, champ, valeurActuelle) => {
+    const { error } = await supabase.from('membres').update({ [champ]: !valeurActuelle }).eq('id', membreId);
+    if (error) { alert('Erreur : ' + error.message); return; }
+    await chargerMembres(familleId);
+  };
+
   const transfererAdmin = async (id) => {
     const cible = membres.find(m => m.id === id);
     if (!cible?.profilId) { alert("Ce membre n'a pas encore de compte lié — il/elle doit d'abord se connecter et utiliser \"🔗 C'est moi\"."); return; }
@@ -335,6 +344,23 @@ export default function Membres() {
               )}
             </div>
 
+            {membreSelectionne.profilId === monUserId && (
+              <div style={{background:'#F0FDF4', border:'2px solid #2D6A4F', borderRadius:'10px', padding:'.8rem', marginBottom:'1rem'}}>
+                <p style={{fontSize:'.82rem', fontWeight:'700', color:'#1B4332', marginBottom:'.5rem'}}>🔒 Visibilité de mes infos pour le reste de la famille</p>
+                <div style={{display:'flex', gap:'1.2rem', flexWrap:'wrap'}}>
+                  <label style={{display:'flex', alignItems:'center', gap:'.4rem', fontSize:'.82rem', cursor:'pointer'}}>
+                    <input type="checkbox" checked={membreSelectionne.telephoneVisible} onChange={()=>toggleVisibilite(membreSelectionne.id, 'telephone_visible', membreSelectionne.telephoneVisible)}/>
+                    📱 Téléphone visible
+                  </label>
+                  <label style={{display:'flex', alignItems:'center', gap:'.4rem', fontSize:'.82rem', cursor:'pointer'}}>
+                    <input type="checkbox" checked={membreSelectionne.santeVisible} onChange={()=>toggleVisibilite(membreSelectionne.id, 'sante_visible', membreSelectionne.santeVisible)}/>
+                    🩺 Données santé visibles
+                  </label>
+                </div>
+                <p style={{fontSize:'.75rem', color:'#888', marginTop:'.4rem', marginBottom:0}}>L'Admin peut toujours tout voir, même masqué (utile en urgence).</p>
+              </div>
+            )}
+
             {!membreSelectionne.profilId && (
               <div style={{background:'#FFF8E1', border:'2px solid #FFD54F', borderRadius:'10px', padding:'.8rem', marginBottom:'1rem', display:'flex', alignItems:'center', gap:'.8rem', flexWrap:'wrap'}}>
                 <span style={{fontSize:'.85rem', color:'#795548', flex:1}}>Aucun compte relié à cette fiche — les rôles Admin/Co-Admin ne sont possibles qu'avec un compte.</span>
@@ -365,16 +391,27 @@ export default function Membres() {
                   <div className="info-item"><span className="info-label">🌍 Ville</span><span className="info-value">{membreSelectionne.ville}</span></div>
                   <div className="info-item"><span className="info-label">🏳️ Pays</span><span className="info-value">{membreSelectionne.pays}</span></div>
                   <div className="info-item"><span className="info-label">💼 Profession</span><span className="info-value">{membreSelectionne.profession}</span></div>
-                  <div className="info-item"><span className="info-label">📱 Téléphone</span><span className="info-value">{membreSelectionne.telephone}</span></div>
+                  <div className="info-item">
+                    <span className="info-label">📱 Téléphone</span>
+                    <span className="info-value">
+                      {(membreSelectionne.telephoneVisible || monRole === 'admin' || membreSelectionne.profilId === monUserId)
+                        ? membreSelectionne.telephone
+                        : '🔒 Masqué'}
+                    </span>
+                  </div>
                 </div>
               </div>
               <div className="info-section sante-section">
                 <h3>🩺 Données de santé</h3>
-                <div className="info-grid">
-                  <div className="info-item"><span className="info-label">🩸 Groupe sanguin</span><span className="info-value sang">{membreSelectionne.sang}</span></div>
-                  <div className="info-item"><span className="info-label">🧬 Maladie héréditaire</span><span className={`info-value ${membreSelectionne.maladie!=='Aucune'?'warning':''}`}>{membreSelectionne.maladie}</span></div>
-                  <div className="info-item"><span className="info-label">💊 Allergie</span><span className={`info-value ${membreSelectionne.allergie!=='Aucune'?'warning':''}`}>{membreSelectionne.allergie}</span></div>
-                </div>
+                {(membreSelectionne.santeVisible || monRole === 'admin' || membreSelectionne.profilId === monUserId) ? (
+                  <div className="info-grid">
+                    <div className="info-item"><span className="info-label">🩸 Groupe sanguin</span><span className="info-value sang">{membreSelectionne.sang}</span></div>
+                    <div className="info-item"><span className="info-label">🧬 Maladie héréditaire</span><span className={`info-value ${membreSelectionne.maladie!=='Aucune'?'warning':''}`}>{membreSelectionne.maladie}</span></div>
+                    <div className="info-item"><span className="info-label">💊 Allergie</span><span className={`info-value ${membreSelectionne.allergie!=='Aucune'?'warning':''}`}>{membreSelectionne.allergie}</span></div>
+                  </div>
+                ) : (
+                  <p style={{color:'#888', fontSize:'.85rem'}}>🔒 Ces données ont été masquées par ce membre.</p>
+                )}
               </div>
             </div>
           </div>
