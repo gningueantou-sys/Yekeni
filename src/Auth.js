@@ -66,7 +66,7 @@ function Auth() {
     if (data.user) {
       const { error: errProfil } = await supabase
         .from('profils')
-        .update({ nom_complet: `${inscPrenom} ${inscNom}` })
+        .update({ nom_complet: `${inscPrenom} ${inscNom}`, langue: inscLangue })
         .eq('id', data.user.id);
       if (errProfil) console.error('Erreur mise à jour profil :', errProfil);
     }
@@ -81,6 +81,7 @@ function Auth() {
   const [rEmail, setREmail] = useState('');
   const [rPassword, setRPassword] = useState('');
   const [rCode, setRCode] = useState('');
+  const [rLangue, setRLangue] = useState('Français');
   const [rError, setRError] = useState('');
   const [rChargement, setRChargement] = useState(false);
 
@@ -119,7 +120,7 @@ function Auth() {
     if (data.user) {
       const { error: errProfil } = await supabase
         .from('profils')
-        .update({ nom_complet: `${rPrenom} ${rNom}`, famille_id: famille.id })
+        .update({ nom_complet: `${rPrenom} ${rNom}`, famille_id: famille.id, langue: rLangue })
         .eq('id', data.user.id);
       if (errProfil) {
         setRError("Compte créé mais erreur lors du rattachement à la famille : " + errProfil.message);
@@ -221,6 +222,15 @@ function Auth() {
               <div className="form-group">
                 <label>Mot de passe</label>
                 <input type="password" placeholder="••••••••" value={rPassword} onChange={e => setRPassword(e.target.value)} />
+              </div>
+              <div className="form-group">
+                <label>Langue préférée</label>
+                <select value={rLangue} onChange={e => setRLangue(e.target.value)}>
+                  <option>Français</option>
+                  <option>Wolof</option>
+                  <option>Pulaar</option>
+                  <option>Sérère</option>
+                </select>
               </div>
               <div className="form-group">
                 <label>Code famille</label>
