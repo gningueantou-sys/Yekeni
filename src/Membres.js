@@ -31,12 +31,14 @@ const extrasParDefaut = (role = 'Membre') => ({
 const roleVersLabel = { admin: 'Admin', moderateur: 'Co-Admin', membre: 'Membre', invite: 'Invité' };
 
 // Fusionne les lignes réelles de Supabase avec les extras locaux et les profils liés
+// nom = nom de famille seul (comme partout ailleurs dans l'appli) ; nomComplet = prénom + nom pour l'affichage
 const fusionnerAvecExtras = (rows, extras, profilsParMembre) => rows.map(r => {
   const profil = profilsParMembre[r.id];
   return {
     id: r.id,
     nom: r.nom,
     prenom: r.prenom,
+    nomComplet: r.prenom ? `${r.prenom} ${r.nom}` : r.nom,
     genre: r.genre,
     date_naissance: r.date_naissance,
     ville: r.ville || '',
@@ -82,7 +84,7 @@ export default function Membres() {
   const admin = membres.find(m => m.estAdmin);
   const coAdmins = membres.filter(m => m.estCoAdmin);
   const membresFiltres = membres.filter(m =>
-    m.nom.toLowerCase().includes(recherche.toLowerCase()) ||
+    m.nomComplet.toLowerCase().includes(recherche.toLowerCase()) ||
     m.ville.toLowerCase().includes(recherche.toLowerCase()) ||
     m.pays.toLowerCase().includes(recherche.toLowerCase())
   );
@@ -274,12 +276,12 @@ export default function Membres() {
         <div style={{flex:1}}>
           <div style={{display:'flex', alignItems:'center', gap:'.5rem', marginBottom:'.3rem'}}>
             <span style={{fontSize:'1.3rem'}}>👑</span>
-            <span style={{color:'white', fontWeight:'700', fontSize:'.95rem'}}>Admin : {admin?.nom || 'Non défini'}</span>
+            <span style={{color:'white', fontWeight:'700', fontSize:'.95rem'}}>Admin : {admin?.nomComplet || 'Non défini'}</span>
           </div>
           {coAdmins.length > 0 && (
             <div style={{display:'flex', alignItems:'center', gap:'.4rem'}}>
               <span style={{fontSize:'1rem'}}>🤝</span>
-              <span style={{color:'#AECFBE', fontSize:'.82rem'}}>Co-Admin{coAdmins.length > 1 ? 's' : ''} : {coAdmins.map(c=>c.nom).join(', ')}</span>
+              <span style={{color:'#AECFBE', fontSize:'.82rem'}}>Co-Admin{coAdmins.length > 1 ? 's' : ''} : {coAdmins.map(c=>c.nomComplet).join(', ')}</span>
             </div>
           )}
         </div>
@@ -316,7 +318,7 @@ export default function Membres() {
               <div key={m.id} className={`membre-item ${membreSelectionne?.id===m.id?'actif':''}`} onClick={()=>setMembreSelectionne(m)}>
                 <div className="membre-item-avatar">{m.avatar}</div>
                 <div className="membre-item-info">
-                  <h4>{m.nom} {m.estAdmin && '👑'} {m.estCoAdmin && '🤝'}</h4>
+                  <h4>{m.nomComplet} {m.estAdmin && '👑'} {m.estCoAdmin && '🤝'}</h4>
                   <p>{m.profession} — {m.ville}, {m.pays}</p>
                 </div>
                 <div className="membre-item-badges">
@@ -335,7 +337,7 @@ export default function Membres() {
             <div className="profil-header">
               <div className="profil-avatar">{membreSelectionne.avatar}</div>
               <div>
-                <h2>{membreSelectionne.nom}</h2>
+                <h2>{membreSelectionne.nomComplet}</h2>
                 <p>{membreSelectionne.profession}</p>
                 <span className={`badge-role ${getBadgeRole(membreSelectionne).cls}`}>{getBadgeRole(membreSelectionne).label}</span>
               </div>
@@ -436,7 +438,7 @@ export default function Membres() {
                   onMouseOut={e=>e.currentTarget.style.borderColor='transparent'}>
                   <span style={{fontSize:'1.5rem'}}>{m.avatar}</span>
                   <div>
-                    <div style={{fontWeight:'700', fontSize:'.9rem'}}>{m.nom}</div>
+                    <div style={{fontWeight:'700', fontSize:'.9rem'}}>{m.nomComplet}</div>
                     <div style={{fontSize:'.78rem', color:'#888'}}>{m.profilId ? `${m.profession} · ${m.ville}` : 'Aucun compte lié'}</div>
                   </div>
                   {m.estCoAdmin && <span style={{marginLeft:'auto', background:'#dcfce7', color:'#2D6A4F', padding:'2px 8px', borderRadius:'8px', fontSize:'.75rem', fontWeight:'600'}}>Co-Admin</span>}
@@ -454,8 +456,8 @@ export default function Membres() {
           <div className="confirm-modal" onClick={e=>e.stopPropagation()}>
             <span style={{fontSize:'2.5rem'}}>👑</span>
             <h3>Confirmer le transfert ?</h3>
-            <p><strong>{confirmTransfert.nom}</strong> deviendra le nouvel Admin de la famille.</p>
-            <p style={{color:'#888', fontSize:'.85rem'}}>L'Admin actuel ({admin?.nom}) deviendra Membre.</p>
+            <p><strong>{confirmTransfert.nomComplet}</strong> deviendra le nouvel Admin de la famille.</p>
+            <p style={{color:'#888', fontSize:'.85rem'}}>L'Admin actuel ({admin?.nomComplet}) deviendra Membre.</p>
             <div className="form-buttons">
               <button className="btn-annuler" onClick={()=>setConfirmTransfert(null)}>Annuler</button>
               <button className="btn-confirmer" onClick={()=>transfererAdmin(confirmTransfert.id)}>✅ Confirmer</button>
@@ -475,7 +477,7 @@ export default function Membres() {
                 <div key={m.id} style={{display:'flex', alignItems:'center', gap:'.8rem', padding:'.8rem', background: m.estCoAdmin?'#F0FDF4':'#F8FAFC', borderRadius:'10px', border:`2px solid ${m.estCoAdmin?'#2D6A4F':'transparent'}`, opacity: m.profilId?1:0.5}}>
                   <span style={{fontSize:'1.5rem'}}>{m.avatar}</span>
                   <div style={{flex:1}}>
-                    <div style={{fontWeight:'700', fontSize:'.9rem'}}>{m.nom}</div>
+                    <div style={{fontWeight:'700', fontSize:'.9rem'}}>{m.nomComplet}</div>
                     <div style={{fontSize:'.78rem', color:'#888'}}>{m.profilId ? `${m.profession} · ${m.ville}` : 'Aucun compte lié'}</div>
                   </div>
                   <button onClick={()=>toggleCoAdmin(m.id)} disabled={!m.profilId} style={{
@@ -505,10 +507,10 @@ export default function Membres() {
             </div>
             <div className="form-row">
               <div className="form-group"><label>Prénom *</label>
-                <input type="text" placeholder="Moussa" value={nouveau.prenom} onChange={e=>setNouveau({...nouveau,prenom:e.target.value,nom:e.target.value+' Diallo'})}/>
+                <input type="text" placeholder="Moussa" value={nouveau.prenom} onChange={e=>setNouveau({...nouveau,prenom:e.target.value})}/>
               </div>
-              <div className="form-group"><label>Nom complet *</label>
-                <input type="text" placeholder="Moussa Diallo" value={nouveau.nom} onChange={e=>setNouveau({...nouveau,nom:e.target.value})}/>
+              <div className="form-group"><label>Nom de famille *</label>
+                <input type="text" placeholder="Diallo" value={nouveau.nom} onChange={e=>setNouveau({...nouveau,nom:e.target.value})}/>
               </div>
             </div>
             <div className="form-row">
