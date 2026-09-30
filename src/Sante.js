@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './Sante.css';
 import { supabase } from './supabaseClient';
 
@@ -77,6 +77,7 @@ function Sante() {
             medecin: visible ? (fiche.medecin || '') : '🔒 Masqué',
             urgence: visible ? (fiche.contact_urgence || '') : '',
             ficheId: fiche.id || null,
+            preuveChemin: visible ? (fiche.preuve_photo_url || null) : null,
           };
         });
         setMembres(fusionnes);
@@ -89,6 +90,65 @@ function Sante() {
   const [onglet, setOnglet] = useState('apercu');
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({});
+  const [preuveUrl, setPreuveUrl] = useState(null);
+  const [envoiPreuve, setEnvoiPreuve] = useState(false);
+  const preuveFileRef = useRef();
+
+  // Génère un lien temporaire (le bucket est privé) à chaque fois qu'on regarde la fiche d'un membre
+  useEffect(() => {
+    async function chargerPreuve() {
+      setPreuveUrl(null);
+      if (!membreSelectionne?.preuveChemin) return;
+      const { data, error } = await supabase.storage
+        .from('preuves-sante')
+        .createSignedUrl(membreSelectionne.preuveChemin, 3600);
+      if (error) { console.error('Erreur lien preuve :', error); return; }
+      setPreuveUrl(data.signedUrl);
+    }
+    chargerPreuve();
+  }, [membreSelectionne]);
+
+  const declencherUploadPreuve = () => {
+    preuveFileRef.current.click();
+  };
+
+  const uploaderPreuve = async (e) => {
+    const file = e.target.files[0];
+    if (!file || !membreSelectionne) return;
+    e.target.value = '';
+
+    setEnvoiPreuve(true);
+    const extension = file.name.split('.').pop();
+    const chemin = `${familleId}/${membreSelectionne.id}-${Date.now()}.${extension}`;
+
+    const { error: errUpload } = await supabase.storage.from('preuves-sante').upload(chemin, file, {
+      contentType: file.type,
+    });
+    if (errUpload) {
+      alert("Erreur lors de l'envoi de la preuve : " + errUpload.message);
+      setEnvoiPreuve(false);
+      return;
+    }
+
+    let ficheIdFinal = membreSelectionne.ficheId;
+    if (ficheIdFinal) {
+      const { error } = await supabase.from('sante_familiale').update({ preuve_photo_url: chemin }).eq('id', ficheIdFinal);
+      if (error) { alert('Erreur : ' + error.message); setEnvoiPreuve(false); return; }
+    } else {
+      const { data, error } = await supabase.from('sante_familiale').insert({
+        membre_id: membreSelectionne.id,
+        famille_id: familleId,
+        preuve_photo_url: chemin,
+      }).select().single();
+      if (error) { alert('Erreur : ' + error.message); setEnvoiPreuve(false); return; }
+      ficheIdFinal = data.id;
+    }
+
+    const misAJour = { ...membreSelectionne, ficheId: ficheIdFinal, preuveChemin: chemin };
+    setMembres(membres.map(m => m.id === misAJour.id ? misAJour : m));
+    setMembreSelectionne(misAJour);
+    setEnvoiPreuve(false);
+  };
 
   const ouvrirForm = (membre) => {
     setFormData({ ...membre });
@@ -269,6 +329,27 @@ function Sante() {
                 <div className="fiche-lock">
                   {membreSelectionne.visible ? '🔒 Données chiffrées — Accès Admin uniquement' : '🔒 Ce membre a masqué ses données santé au reste de la famille'}
                 </div>
+
+                {(membreSelectionne.visible || membreSelectionne.proprietaireId === monUserId) && (
+                  <div style={{marginTop:'1rem', padding:'1rem', background:'#F8FAFC', borderRadius:'12px'}}>
+                    <p style={{fontSize:'.85rem', fontWeight:'700', marginBottom:'.6rem'}}>📷 Preuve du groupe sanguin</p>
+                    {preuveUrl ? (
+                      <div>
+                        <img src={preuveUrl} alt="Preuve groupe sanguin" style={{width:'100%', maxWidth:'320px', borderRadius:'10px', display:'block', marginBottom:'.6rem'}}/>
+                        <button onClick={declencherUploadPreuve} disabled={envoiPreuve} style={{background:'none', border:'2px solid #2D6A4F', color:'#2D6A4F', padding:'.4rem .9rem', borderRadius:'8px', cursor:'pointer', fontWeight:'600', fontSize:'.8rem'}}>
+                          {envoiPreuve ? 'Envoi...' : '🔄 Remplacer la photo'}
+                        </button>
+                      </div>
+                    ) : (
+                      <div>
+                        <p style={{color:'#888', fontSize:'.82rem', marginBottom:'.6rem'}}>Aucune preuve ajoutée — une photo de carte de groupe sanguin rassure en cas d'urgence.</p>
+                        <button onClick={declencherUploadPreuve} disabled={envoiPreuve} style={{background:'#2D6A4F', color:'white', border:'none', padding:'.5rem 1rem', borderRadius:'8px', cursor:'pointer', fontWeight:'600', fontSize:'.82rem'}}>
+                          {envoiPreuve ? 'Envoi...' : '📷 Ajouter une preuve'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             ) : (
               <div className="fiche-detail vide">
@@ -334,36 +415,54 @@ function Sante() {
             <p>En cas d'urgence, sachez qui peut donner du sang à qui</p>
           </div>
           <div className="sang-grid">
-            {membres.map(m => (
-              <div className="sang-card" key={m.id}>
-                <div className="sang-card-header">
-                  <span>{m.avatar}</span>
-                  <div>
-                    <h4>{m.nom}</h4>
-                    <span className="sang-badge">{m.sang}</span>
-                  </div>
-                </div>
-                <div className="sang-info">
-                  <p className="sang-desc">{groupesSanguins[m.sang]?.description || 'Groupe inconnu'}</p>
-                  <div className="sang-compatible">
-                    <span className="sang-label">Peut donner à :</span>
-                    <div className="sang-tags">
-                      {groupesSanguins[m.sang]?.compatible.map((g, i) => (
-                        <span key={i} className="sang-tag">{g}</span>
-                      ))}
+            {membres.map(m => {
+              const compatiblesTrouves = membres.filter(d =>
+                d.id !== m.id &&
+                (groupesSanguins[d.sang]?.compatible.includes(m.sang) || groupesSanguins[d.sang]?.compatible.includes('Tous'))
+              );
+              return (
+                <div className="sang-card" key={m.id}>
+                  <div className="sang-card-header">
+                    <span>{m.avatar}</span>
+                    <div>
+                      <h4>{m.nom}</h4>
+                      <span className="sang-badge">{m.sang}</span>
                     </div>
                   </div>
-                  <div className="donneurs">
-                    <span className="sang-label">Membres compatibles :</span>
-                    <div className="donneurs-liste">
-                      {membres.filter(d => groupesSanguins[d.sang]?.compatible.includes(m.sang) || groupesSanguins[d.sang]?.compatible.includes('Tous')).map((d, i) => (
-                        <span key={i} className="donneur-tag">{d.avatar} {d.nom.split(' ')[0]}</span>
-                      ))}
-                    </div>
+                  <div className="sang-info">
+                    {m.sang === 'Inconnu' ? (
+                      <p className="sang-desc" style={{color:'#888', fontStyle:'italic'}}>
+                        Groupe sanguin non renseigné — impossible de calculer les compatibilités. Renseigne-le dans l'onglet "Fiches santé".
+                      </p>
+                    ) : (
+                      <>
+                        <p className="sang-desc">{groupesSanguins[m.sang]?.description || 'Groupe inconnu'}</p>
+                        <div className="sang-compatible">
+                          <span className="sang-label">Peut donner à :</span>
+                          <div className="sang-tags">
+                            {groupesSanguins[m.sang]?.compatible.map((g, i) => (
+                              <span key={i} className="sang-tag">{g}</span>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="donneurs">
+                          <span className="sang-label">Membres compatibles :</span>
+                          <div className="donneurs-liste">
+                            {compatiblesTrouves.length > 0 ? (
+                              compatiblesTrouves.map((d, i) => (
+                                <span key={i} className="donneur-tag">{d.avatar} {d.nom.split(' ')[0]}</span>
+                              ))
+                            ) : (
+                              <span style={{color:'#888', fontSize:'.82rem'}}>Aucun membre compatible connu pour l'instant.</span>
+                            )}
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
@@ -411,6 +510,8 @@ function Sante() {
           </div>
         </div>
       )}
+
+      <input type="file" ref={preuveFileRef} accept="image/*" style={{display:'none'}} onChange={uploaderPreuve}/>
 
     </div>
   );

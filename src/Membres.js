@@ -21,19 +21,17 @@ const sauvegarderExtras = (extras) => {
 
 const extrasParDefaut = (role = 'Membre') => ({
   avatar: '👤',
-  sang: 'Inconnu',
-  maladie: 'Aucune',
-  allergie: 'Aucune',
   role,
 });
 
 // role_type Supabase : admin, moderateur, membre, invite
 const roleVersLabel = { admin: 'Admin', moderateur: 'Co-Admin', membre: 'Membre', invite: 'Invité' };
 
-// Fusionne les lignes réelles de Supabase avec les extras locaux et les profils liés
+// Fusionne les lignes réelles de Supabase avec les extras locaux, les profils liés et les fiches santé
 // nom = nom de famille seul (comme partout ailleurs dans l'appli) ; nomComplet = prénom + nom pour l'affichage
-const fusionnerAvecExtras = (rows, extras, profilsParMembre) => rows.map(r => {
+const fusionnerAvecExtras = (rows, extras, profilsParMembre, santeParMembre) => rows.map(r => {
   const profil = profilsParMembre[r.id];
+  const sante = santeParMembre[r.id] || {};
   return {
     id: r.id,
     nom: r.nom,
@@ -49,6 +47,10 @@ const fusionnerAvecExtras = (rows, extras, profilsParMembre) => rows.map(r => {
     santeVisible: r.sante_visible !== false,
     ...extrasParDefaut(),
     ...(extras[r.id] || {}),
+    sang: sante.groupe_sanguin || 'Inconnu',
+    maladie: sante.maladie_hereditaire || 'Aucune',
+    allergie: sante.allergie || 'Aucune',
+    ficheSanteId: sante.id || null,
     profilId: profil?.id || null,
     profilRole: profil?.role || null,
     estAdmin: profil?.role === 'admin',
@@ -92,19 +94,24 @@ export default function Membres() {
   const chargerMembres = async (fid) => {
     if (!fid) { setChargement(false); return; }
 
-    const [{ data: membresData, error: errM }, { data: profilsData, error: errP }] = await Promise.all([
+    const [{ data: membresData, error: errM }, { data: profilsData, error: errP }, { data: santeData, error: errS }] = await Promise.all([
       supabase.from('membres').select('*').eq('famille_id', fid).order('nom', { ascending: true }),
       supabase.from('profils').select('id, membre_id, role').eq('famille_id', fid),
+      supabase.from('sante_familiale').select('id, membre_id, groupe_sanguin, maladie_hereditaire, allergie').eq('famille_id', fid),
     ]);
 
     if (errM) { console.error('Erreur chargement membres :', errM); setChargement(false); return; }
     if (errP) { console.error('Erreur chargement profils :', errP); }
+    if (errS) { console.error('Erreur chargement santé :', errS); }
 
     const profilsParMembre = {};
     (profilsData || []).forEach(p => { if (p.membre_id) profilsParMembre[p.membre_id] = p; });
 
+    const santeParMembre = {};
+    (santeData || []).forEach(s => { santeParMembre[s.membre_id] = s; });
+
     const extras = chargerExtras();
-    setMembres(fusionnerAvecExtras(membresData || [], extras, profilsParMembre));
+    setMembres(fusionnerAvecExtras(membresData || [], extras, profilsParMembre, santeParMembre));
     setChargement(false);
   };
 
@@ -167,12 +174,20 @@ export default function Membres() {
       return;
     }
 
+    // Crée la fiche santé du membre dans la même table que Sante.js, pour que
+    // le groupe sanguin/maladie/allergie choisis ici y apparaissent tout de suite.
+    const { error: errSante } = await supabase.from('sante_familiale').insert({
+      membre_id: data.id,
+      famille_id: familleId,
+      groupe_sanguin: nouveau.sang,
+      maladie_hereditaire: nouveau.maladie,
+      allergie: nouveau.allergie,
+    });
+    if (errSante) console.error('Erreur création fiche santé :', errSante);
+
     const extras = chargerExtras();
     extras[data.id] = {
       avatar: nouveau.avatar,
-      sang: nouveau.sang,
-      maladie: nouveau.maladie,
-      allergie: nouveau.allergie,
       role: nouveau.role,
     };
     sauvegarderExtras(extras);
