@@ -1,10 +1,49 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend, LineChart, Line
 } from 'recharts';
 import { supabase } from './supabaseClient';
 import './Statistiques.css';
+
+// Sur Safari mobile (iOS), ResponsiveContainer de Recharts mesure parfois une
+// largeur de 0px au tout premier rendu (avant que la mise en page du flex/grid
+// ne soit terminée), et ne se corrige jamais tout seul tant qu'il n'y a pas de
+// vrai redimensionnement (rotation d'écran). Résultat : légendes visibles,
+// graphiques vides. Ce composant attend d'avoir mesuré une largeur réelle et
+// non nulle du conteneur avant de monter le graphique.
+function ChartBox({ height, children }) {
+  const ref = useRef(null);
+  const [pret, setPret] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const mesurer = () => { if (el.offsetWidth > 0) setPret(true); };
+    mesurer();
+    const t1 = setTimeout(mesurer, 50);
+    const t2 = setTimeout(mesurer, 300);
+    const t3 = setTimeout(mesurer, 800);
+    let ro;
+    if (typeof window !== 'undefined' && window.ResizeObserver) {
+      ro = new window.ResizeObserver(() => mesurer());
+      ro.observe(el);
+    } else if (typeof window !== 'undefined') {
+      window.addEventListener('resize', mesurer);
+    }
+    return () => {
+      clearTimeout(t1); clearTimeout(t2); clearTimeout(t3);
+      if (ro) ro.disconnect();
+      else if (typeof window !== 'undefined') window.removeEventListener('resize', mesurer);
+    };
+  }, []);
+
+  return (
+    <div ref={ref} style={{ width: '100%', height, minWidth: 0 }}>
+      {pret ? children : null}
+    </div>
+  );
+}
 
 const COLORS_SANG = ['#2D6A4F', '#4CAF50', '#81C784', '#A5D6A7', '#BDBDBD', '#66BB6A', '#388E3C', '#C8E6C9'];
 
@@ -173,15 +212,17 @@ function Statistiques() {
         <div className="stat-chart-card">
           <h3>🌍 Membres par pays</h3>
           {dataPays.length > 0 ? (
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={dataPays} margin={{ top: 10, right: 20, left: -20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0"/>
-                <XAxis dataKey="pays" tick={{ fontSize: 11 }}/>
-                <YAxis tick={{ fontSize: 11 }} allowDecimals={false}/>
-                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}/>
-                <Bar dataKey="membres" fill="#2D6A4F" radius={[6, 6, 0, 0]}/>
-              </BarChart>
-            </ResponsiveContainer>
+            <ChartBox height={220}>
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={dataPays} margin={{ top: 10, right: 20, left: -20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0"/>
+                  <XAxis dataKey="pays" tick={{ fontSize: 11 }}/>
+                  <YAxis tick={{ fontSize: 11 }} allowDecimals={false}/>
+                  <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}/>
+                  <Bar dataKey="membres" fill="#2D6A4F" radius={[6, 6, 0, 0]}/>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartBox>
           ) : <p style={{color:'#888', fontSize:'.85rem'}}>Aucun pays renseigné pour l'instant.</p>}
         </div>
 
@@ -189,15 +230,17 @@ function Statistiques() {
         <div className="stat-chart-card">
           <h3>👥 Répartition par genre</h3>
           {dataGenres.length > 0 ? (
-            <ResponsiveContainer width="100%" height={220}>
-              <PieChart>
-                <Pie data={dataGenres} cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={5} dataKey="value">
-                  {dataGenres.map((entry, index) => <Cell key={index} fill={entry.color}/>)}
-                </Pie>
-                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none' }}/>
-                <Legend/>
-              </PieChart>
-            </ResponsiveContainer>
+            <ChartBox height={220}>
+              <ResponsiveContainer width="100%" height={220}>
+                <PieChart>
+                  <Pie data={dataGenres} cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={5} dataKey="value">
+                    {dataGenres.map((entry, index) => <Cell key={index} fill={entry.color}/>)}
+                  </Pie>
+                  <Tooltip contentStyle={{ borderRadius: '12px', border: 'none' }}/>
+                  <Legend/>
+                </PieChart>
+              </ResponsiveContainer>
+            </ChartBox>
           ) : <p style={{color:'#888', fontSize:'.85rem'}}>Aucun membre pour l'instant.</p>}
         </div>
       </div>
@@ -209,15 +252,17 @@ function Statistiques() {
         <div className="stat-chart-card">
           <h3>📈 Membres ajoutés par année</h3>
           {dataCroissance.length > 0 ? (
-            <ResponsiveContainer width="100%" height={220}>
-              <LineChart data={dataCroissance} margin={{ top: 10, right: 20, left: -20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0"/>
-                <XAxis dataKey="annee" tick={{ fontSize: 11 }}/>
-                <YAxis tick={{ fontSize: 11 }} allowDecimals={false}/>
-                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}/>
-                <Line type="monotone" dataKey="membres" stroke="#2D6A4F" strokeWidth={3} dot={{ fill: '#2D6A4F', r: 5 }} activeDot={{ r: 7 }}/>
-              </LineChart>
-            </ResponsiveContainer>
+            <ChartBox height={220}>
+              <ResponsiveContainer width="100%" height={220}>
+                <LineChart data={dataCroissance} margin={{ top: 10, right: 20, left: -20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0"/>
+                  <XAxis dataKey="annee" tick={{ fontSize: 11 }}/>
+                  <YAxis tick={{ fontSize: 11 }} allowDecimals={false}/>
+                  <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}/>
+                  <Line type="monotone" dataKey="membres" stroke="#2D6A4F" strokeWidth={3} dot={{ fill: '#2D6A4F', r: 5 }} activeDot={{ r: 7 }}/>
+                </LineChart>
+              </ResponsiveContainer>
+            </ChartBox>
           ) : <p style={{color:'#888', fontSize:'.85rem'}}>Pas assez de données pour tracer la croissance.</p>}
         </div>
 
@@ -225,15 +270,17 @@ function Statistiques() {
         <div className="stat-chart-card">
           <h3>🩸 Groupes sanguins</h3>
           {dataSang.length > 0 ? (
-            <ResponsiveContainer width="100%" height={220}>
-              <PieChart>
-                <Pie data={dataSang} cx="50%" cy="50%" outerRadius={85} paddingAngle={3} dataKey="value">
-                  {dataSang.map((entry, index) => <Cell key={index} fill={COLORS_SANG[index % COLORS_SANG.length]}/>)}
-                </Pie>
-                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none' }}/>
-                <Legend/>
-              </PieChart>
-            </ResponsiveContainer>
+            <ChartBox height={220}>
+              <ResponsiveContainer width="100%" height={220}>
+                <PieChart>
+                  <Pie data={dataSang} cx="50%" cy="50%" outerRadius={85} paddingAngle={3} dataKey="value">
+                    {dataSang.map((entry, index) => <Cell key={index} fill={COLORS_SANG[index % COLORS_SANG.length]}/>)}
+                  </Pie>
+                  <Tooltip contentStyle={{ borderRadius: '12px', border: 'none' }}/>
+                  <Legend/>
+                </PieChart>
+              </ResponsiveContainer>
+            </ChartBox>
           ) : <p style={{color:'#888', fontSize:'.85rem'}}>Aucune donnée santé pour l'instant.</p>}
         </div>
       </div>
@@ -242,17 +289,19 @@ function Statistiques() {
       <div className="stat-chart-card full">
         <h3>🌳 Membres par génération</h3>
         {dataGenerations.length > 0 ? (
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={dataGenerations} margin={{ top: 10, right: 20, left: -20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0"/>
-              <XAxis dataKey="generation" tick={{ fontSize: 12 }}/>
-              <YAxis tick={{ fontSize: 12 }} allowDecimals={false}/>
-              <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}/>
-              <Bar dataKey="membres" radius={[8, 8, 0, 0]}>
-                {dataGenerations.map((entry, index) => <Cell key={index} fill={index === 0 ? '#1B4332' : index === 1 ? '#2D6A4F' : '#4CAF50'}/>)}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+          <ChartBox height={200}>
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={dataGenerations} margin={{ top: 10, right: 20, left: -20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0"/>
+                <XAxis dataKey="generation" tick={{ fontSize: 12 }}/>
+                <YAxis tick={{ fontSize: 12 }} allowDecimals={false}/>
+                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}/>
+                <Bar dataKey="membres" radius={[8, 8, 0, 0]}>
+                  {dataGenerations.map((entry, index) => <Cell key={index} fill={index === 0 ? '#1B4332' : index === 1 ? '#2D6A4F' : '#4CAF50'}/>)}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartBox>
         ) : <p style={{color:'#888', fontSize:'.85rem'}}>Aucune génération renseignée — ajoute-en depuis "Mes Racines".</p>}
       </div>
 

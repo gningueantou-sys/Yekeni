@@ -203,6 +203,7 @@ function Dashboard({ onRetour }) {
           <button className={onglet==='carte'?'nav-item actif':'nav-item'} onClick={()=>setOnglet('carte')}>🗺️ Carte familiale</button>
           <button className={onglet==='stats'?'nav-item actif':'nav-item'} onClick={()=>setOnglet('stats')}>📊 Statistiques</button>
           <button className={onglet==='racines'?'nav-item actif':'nav-item'} onClick={()=>setOnglet('racines')}>🌍 Mes Racines</button>
+          <button className="nav-item" onClick={()=>window.dispatchEvent(new CustomEvent('goToFamille'))}>⚙️ Paramètres famille</button>
         </nav>
         <button className="btn-deconnexion" onClick={onRetour}>← Déconnexion</button>
       </div>

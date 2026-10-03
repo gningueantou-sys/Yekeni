@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './Racines.css';
 import { supabase } from './supabaseClient';
 
@@ -40,6 +40,7 @@ export default function Racines() {
   const [membres, setMembres] = useState([]);
   const [chargement, setChargement] = useState(true);
   const [familleId, setFamilleId] = useState(null);
+  const [monUserId, setMonUserId] = useState(null);
   const [sel, setSel] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [cible, setCible] = useState('nouveau'); // 'nouveau' ou un id de membre existant
@@ -47,6 +48,47 @@ export default function Racines() {
   const [onglet, setOnglet] = useState('carte');
   const [showAutreLangue, setShowAutreLangue] = useState(false);
   const [autreLangue, setAutreLangue] = useState('');
+
+  // --- Voix des anciens (témoignages audio) ---
+  const [temoignages, setTemoignages] = useState([]);
+  const [showRecordModal, setShowRecordModal] = useState(false);
+  const [enregistrement, setEnregistrement] = useState(false);
+  const [audioBlob, setAudioBlob] = useState(null);
+  const [audioPreviewUrl, setAudioPreviewUrl] = useState(null);
+  const [envoiEnCours, setEnvoiEnCours] = useState(false);
+  const [fdTemoignage, setFdTemoignage] = useState({ titre:'', langue:'Français', description:'', membreId:'' });
+  const mediaRecorderRef = useRef(null);
+  const chunksRef = useRef([]);
+  const mimeTypeRef = useRef('audio/webm');
+
+  // Safari (iOS et macOS) ne sait pas enregistrer en 'audio/webm' — il ne
+  // déclenche jamais d'erreur visible, mais produit un fichier illisible.
+  // On détecte le format que le navigateur sait vraiment produire.
+  const choisirMimeType = () => {
+    const candidats = ['audio/mp4', 'audio/webm', 'audio/webm;codecs=opus', 'audio/ogg;codecs=opus', 'audio/aac'];
+    if (typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported) {
+      for (const c of candidats) {
+        if (MediaRecorder.isTypeSupported(c)) return c;
+      }
+    }
+    return ''; // laisse le navigateur choisir son propre défaut
+  };
+
+  const extensionPourMime = (mime) => {
+    if (mime.includes('mp4') || mime.includes('aac')) return 'm4a';
+    if (mime.includes('ogg')) return 'ogg';
+    return 'webm';
+  };
+
+  const chargerTemoignages = async (fid) => {
+    const { data, error } = await supabase
+      .from('temoignages')
+      .select('*, membres(prenom, nom), profils(nom_complet)')
+      .eq('famille_id', fid)
+      .order('created_at', { ascending: false });
+    if (error) { console.error('Erreur chargement témoignages :', error); return; }
+    setTemoignages(data || []);
+  };
 
   const chargerMembres = async (fid) => {
     const { data, error } = await supabase
@@ -63,6 +105,7 @@ export default function Racines() {
     async function init() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { setChargement(false); return; }
+      setMonUserId(user.id);
       const { data: profil, error } = await supabase
         .from('profils')
         .select('famille_id')
@@ -71,6 +114,7 @@ export default function Racines() {
       if (error || !profil?.famille_id) { setChargement(false); return; }
       setFamilleId(profil.famille_id);
       await chargerMembres(profil.famille_id);
+      await chargerTemoignages(profil.famille_id);
       setChargement(false);
     }
     init();
@@ -158,6 +202,98 @@ export default function Racines() {
   const toggleLangue = (l) => {
     const dejaDedans = fd.langues.includes(l);
     setFd({...fd, langues: dejaDedans ? fd.langues.filter(x=>x!==l) : [...fd.langues, l]});
+  };
+
+  // --- Enregistrement audio ---
+  const ouvrirModalEnregistrement = () => {
+    setAudioBlob(null);
+    setAudioPreviewUrl(null);
+    setFdTemoignage({ titre:'', langue:'Français', description:'', membreId:'' });
+    setShowRecordModal(true);
+  };
+
+  const demarrerEnregistrement = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mimeChoisi = choisirMimeType();
+      const recorder = mimeChoisi ? new MediaRecorder(stream, { mimeType: mimeChoisi }) : new MediaRecorder(stream);
+      // recorder.mimeType est la valeur réelle utilisée par le navigateur
+      // (peut différer légèrement de ce qu'on a demandé, ex: avec les codecs).
+      mimeTypeRef.current = recorder.mimeType || mimeChoisi || 'audio/webm';
+      chunksRef.current = [];
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data); };
+      recorder.onstop = () => {
+        const blob = new Blob(chunksRef.current, { type: mimeTypeRef.current });
+        setAudioBlob(blob);
+        setAudioPreviewUrl(URL.createObjectURL(blob));
+        stream.getTracks().forEach(t => t.stop());
+      };
+      recorder.start();
+      mediaRecorderRef.current = recorder;
+      setEnregistrement(true);
+    } catch (e) {
+      alert("Impossible d'accéder au micro : " + e.message);
+    }
+  };
+
+  const arreterEnregistrement = () => {
+    mediaRecorderRef.current?.stop();
+    setEnregistrement(false);
+  };
+
+  const recommencerEnregistrement = () => {
+    setAudioBlob(null);
+    setAudioPreviewUrl(null);
+  };
+
+  const envoyerTemoignage = async () => {
+    if (!audioBlob || !fdTemoignage.titre || !familleId) return;
+    setEnvoiEnCours(true);
+
+    const mime = mimeTypeRef.current || 'audio/webm';
+    const extension = extensionPourMime(mime);
+    const chemin = `${familleId}/${Date.now()}.${extension}`;
+    const { error: errUpload } = await supabase.storage.from('temoignages').upload(chemin, audioBlob, {
+      contentType: mime,
+    });
+
+    if (errUpload) {
+      alert("Erreur lors de l'envoi de l'audio : " + errUpload.message);
+      setEnvoiEnCours(false);
+      return;
+    }
+
+    const { data: urlData } = supabase.storage.from('temoignages').getPublicUrl(chemin);
+
+    const { data: { user } } = await supabase.auth.getUser();
+    const { error: errInsert } = await supabase.from('temoignages').insert({
+      famille_id: familleId,
+      membre_id: fdTemoignage.membreId || null,
+      cree_par: user?.id || null,
+      titre: fdTemoignage.titre,
+      langue: fdTemoignage.langue,
+      description: fdTemoignage.description || null,
+      audio_url: urlData.publicUrl,
+    });
+
+    if (errInsert) {
+      alert("Erreur lors de l'enregistrement : " + errInsert.message);
+      setEnvoiEnCours(false);
+      return;
+    }
+
+    await chargerTemoignages(familleId);
+    setEnvoiEnCours(false);
+    setShowRecordModal(false);
+  };
+
+  const supprimerTemoignage = async (t) => {
+    if (!window.confirm('Supprimer ce témoignage ?')) return;
+    const chemin = t.audio_url.split('/temoignages/')[1];
+    if (chemin) await supabase.storage.from('temoignages').remove([chemin]);
+    const { error } = await supabase.from('temoignages').delete().eq('id', t.id);
+    if (error) { alert('Erreur lors de la suppression : ' + error.message); return; }
+    setTemoignages(temoignages.filter(x => x.id !== t.id));
   };
 
   const ethniesUniques = [...new Set(membresDocumentes.map(m => m.ethnie))];
@@ -305,33 +441,31 @@ export default function Racines() {
             <p>Enregistrez et préservez la voix, les histoires et les sagesses de vos ancêtres avant qu'elles ne disparaissent.</p>
           </div>
           <div className="audio-grid">
-            {[
-              { nom:'Moussa Diallo', avatar:'👴', titre:'Histoire des origines Peul', duree:'3:42', langue:'Pulaar', desc:"Grand-père raconte l'histoire de la famille depuis le Fouta Toro" },
-              { nom:'Fatoumata Diallo', avatar:'👵', titre:'Recette du Thiéboudienne', duree:'5:15', langue:'Wolof', desc:'Grand-mère explique la recette secrète transmise depuis 3 générations' },
-              { nom:'Moussa Diallo', avatar:'👴', titre:'Proverbes Peul', duree:'2:30', langue:'Pulaar', desc:'Les sagesses ancestrales en Pulaar' },
-            ].map((a,i)=>(
-              <div key={i} className="audio-card">
+            {temoignages.map((t)=>(
+              <div key={t.id} className="audio-card">
                 <div className="audio-top">
-                  <span className="audio-avatar">{a.avatar}</span>
-                  <div><h4>{a.titre}</h4><p>{a.nom} · {a.langue}</p></div>
-                  <span className="audio-duree">{a.duree}</span>
-                </div>
-                <p className="audio-desc">{a.desc}</p>
-                <div className="audio-player">
-                  <button className="btn-play">▶️ Écouter</button>
-                  <div className="audio-barre">
-                    <div className="audio-progress" style={{width:`${(i+1)*25}%`}}/>
+                  <span className="audio-avatar">🎙️</span>
+                  <div>
+                    <h4>{t.titre}</h4>
+                    <p>{t.membres ? `${t.membres.prenom} ${t.membres.nom}` : (t.profils?.nom_complet || 'Membre')} · {t.langue}</p>
                   </div>
+                  {t.cree_par === monUserId && (
+                    <button onClick={()=>supprimerTemoignage(t)} style={{background:'none', border:'none', cursor:'pointer', fontSize:'.9rem', opacity:0.5}} title="Supprimer">🗑️</button>
+                  )}
                 </div>
+                {t.description && <p className="audio-desc">{t.description}</p>}
+                <audio controls src={t.audio_url} style={{width:'100%', marginTop:'.5rem'}}/>
               </div>
             ))}
-            <div className="audio-card ajouter" onClick={()=>alert("Fonctionnalité d'enregistrement à venir !")}>
+            <div className="audio-card ajouter" onClick={ouvrirModalEnregistrement}>
               <div style={{fontSize:'3rem', textAlign:'center', marginBottom:'0.5rem'}}>🎙️</div>
               <h4 style={{textAlign:'center'}}>Enregistrer un témoignage</h4>
               <p style={{textAlign:'center', color:'#888', fontSize:'0.85rem'}}>Capturez la voix d'un ancien de la famille</p>
             </div>
           </div>
-          <p style={{color:'#888', fontSize:'.8rem', marginTop:'1rem'}}>⚠️ Cet onglet affiche encore des exemples fixes — pas de vraie sauvegarde audio pour l'instant.</p>
+          {temoignages.length === 0 && (
+            <p style={{color:'#888', fontSize:'.85rem', textAlign:'center', marginTop:'1rem'}}>Aucun témoignage enregistré pour l'instant.</p>
+          )}
         </div>
       )}
 
@@ -455,6 +589,69 @@ export default function Racines() {
                 {cible === 'nouveau' ? 'Ajouter' : 'Enregistrer'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {showRecordModal && (
+        <div className="ov-racines" onClick={()=>{ if(!envoiEnCours) setShowRecordModal(false); }}>
+          <div className="modal-racines" onClick={e=>e.stopPropagation()}>
+            <button className="xbtn-r" onClick={()=>setShowRecordModal(false)}>✕</button>
+            <h3>🎙️ Enregistrer un témoignage</h3>
+
+            <div style={{textAlign:'center', padding:'1.5rem 0'}}>
+              {!audioBlob ? (
+                <button
+                  onClick={enregistrement ? arreterEnregistrement : demarrerEnregistrement}
+                  style={{
+                    width:'80px', height:'80px', borderRadius:'50%', border:'none',
+                    background: enregistrement ? '#EF5350' : '#2D6A4F', color:'white',
+                    fontSize:'2rem', cursor:'pointer',
+                  }}
+                >
+                  {enregistrement ? '⏹️' : '🎙️'}
+                </button>
+              ) : (
+                <div>
+                  <audio controls src={audioPreviewUrl} style={{width:'100%'}}/>
+                  <button onClick={recommencerEnregistrement} style={{marginTop:'.8rem', background:'none', border:'2px solid #ccc', borderRadius:'9px', padding:'.4rem .9rem', cursor:'pointer'}}>
+                    🔄 Recommencer
+                  </button>
+                </div>
+              )}
+              <p style={{color:'#888', fontSize:'.82rem', marginTop:'.6rem'}}>
+                {enregistrement ? '🔴 Enregistrement en cours...' : (audioBlob ? 'Écoute avant d\'envoyer' : 'Clique pour commencer à enregistrer')}
+              </p>
+            </div>
+
+            {audioBlob && (
+              <>
+                <div className="fg-r"><label>Titre *</label>
+                  <input value={fdTemoignage.titre} onChange={e=>setFdTemoignage({...fdTemoignage,titre:e.target.value})} placeholder="ex: Histoire des origines Peul"/>
+                </div>
+                <div className="fg-r"><label>Concerne quel membre ? (optionnel)</label>
+                  <select value={fdTemoignage.membreId} onChange={e=>setFdTemoignage({...fdTemoignage,membreId:e.target.value})}>
+                    <option value="">Aucun en particulier</option>
+                    {membres.map(m=><option key={m.id} value={m.id}>{m.nom}</option>)}
+                  </select>
+                </div>
+                <div className="fg-r"><label>Langue</label>
+                  <select value={fdTemoignage.langue} onChange={e=>setFdTemoignage({...fdTemoignage,langue:e.target.value})}>
+                    {langues.map(l=><option key={l}>{l}</option>)}
+                  </select>
+                </div>
+                <div className="fg-r"><label>Description</label>
+                  <textarea value={fdTemoignage.description} onChange={e=>setFdTemoignage({...fdTemoignage,description:e.target.value})} placeholder="De quoi parle ce témoignage ?" rows={2} style={{resize:'none',fontFamily:'inherit',padding:'0.6rem 0.8rem',border:'2px solid #f0f0f0',borderRadius:'10px',outline:'none',width:'100%'}}/>
+                </div>
+                <div style={{display:'flex', gap:'0.8rem', marginTop:'1rem'}}>
+                  <button className="btn-fermer-r" onClick={()=>setShowRecordModal(false)} style={{flex:1}} disabled={envoiEnCours}>Annuler</button>
+                  <button className="btn-fermer-r" onClick={envoyerTemoignage} disabled={!fdTemoignage.titre || envoiEnCours}
+                    style={{flex:2, background:'#2D6A4F', color:'white', border:'none', opacity:fdTemoignage.titre?1:0.5}}>
+                    {envoiEnCours ? 'Envoi...' : 'Enregistrer le témoignage'}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

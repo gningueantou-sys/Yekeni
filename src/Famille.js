@@ -113,8 +113,8 @@ function Famille({ onRetour }) {
         <div className="famille-content">
           <div className="famille-box">
             <div className="famille-icon">🏡</div>
-            <h2>Crée ta famille</h2>
-            <p className="famille-desc">Commence par donner un nom à ta branche familiale</p>
+            <h2>{familleId ? 'Paramètres de ta famille' : 'Crée ta famille'}</h2>
+            <p className="famille-desc">{familleId ? "Modifie les informations de ta famille, y compris l'histoire familiale" : 'Commence par donner un nom à ta branche familiale'}</p>
             <div className="form-group">
               <label>Nom de famille *</label>
               <input type="text" name="nom" placeholder="ex: Famille Diallo" value={famille.nom} onChange={handleChange} />
@@ -168,8 +168,11 @@ function Famille({ onRetour }) {
               <textarea name="description" placeholder="Racontez l'histoire de votre famille..." value={famille.description} onChange={handleChange} rows={3} />
             </div>
             <button className="btn-suivant" onClick={passerEtape2} disabled={!famille.nom || sauvegarde}>
-              {sauvegarde ? 'Enregistrement...' : 'Suivant →'}
+              {sauvegarde ? 'Enregistrement...' : (familleId ? 'Enregistrer →' : 'Suivant →')}
             </button>
+            {familleId && (
+              <button className="btn-retour-etape" style={{marginTop:'0.75rem'}} onClick={onRetour}>Annuler</button>
+            )}
           </div>
         </div>
       )}
@@ -222,8 +225,8 @@ function Famille({ onRetour }) {
         <div className="famille-content">
           <div className="famille-box">
             <div className="famille-icon success">✅</div>
-            <h2>Famille créée avec succès !</h2>
-            <p className="famille-desc">Ta branche familiale <strong>{famille.nom}</strong> est prête.</p>
+            <h2>{familleId ? 'Modifications enregistrées !' : 'Famille créée avec succès !'}</h2>
+            <p className="famille-desc">Ta branche familiale <strong>{famille.nom}</strong> est {familleId ? 'à jour' : 'prête'}.</p>
             <div className="recap">
               <div className="recap-item">
                 <span className="recap-label">Famille</span>
@@ -266,7 +269,7 @@ function Famille({ onRetour }) {
               </div>
             </div>
       <button className="btn-suivant" onClick={() => window.dispatchEvent(new CustomEvent('goToDashboard'))}>
-  🌳 Commencer mon arbre familial
+  {familleId ? '🏠 Retour au tableau de bord' : '🌳 Commencer mon arbre familial'}
 </button>
           </div>
         </div>

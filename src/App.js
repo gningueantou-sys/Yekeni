@@ -46,7 +46,9 @@ function App() {
   if (chargement) return <Loader />;
 
   if (page === 'auth') return <Auth />;
-  if (page === 'famille') return <Famille onRetour={() => setPage('accueil')} />;
+  // Si on est déjà connecté (ex: on vient des "Paramètres famille" du Dashboard),
+  // "Retour" doit ramener au Dashboard, pas à la page publique.
+  if (page === 'famille') return <Famille onRetour={() => setPage(session ? 'dashboard' : 'accueil')} />;
   if (page === 'dashboard') return <Dashboard onRetour={seDeconnecter} />;
 
   const textes = {
