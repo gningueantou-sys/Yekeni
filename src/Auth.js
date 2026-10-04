@@ -224,15 +224,6 @@ function Auth() {
                 <input type="password" placeholder="••••••••" value={rPassword} onChange={e => setRPassword(e.target.value)} />
               </div>
               <div className="form-group">
-                <label>Langue préférée</label>
-                <select value={rLangue} onChange={e => setRLangue(e.target.value)}>
-                  <option>Français</option>
-                  <option>Wolof</option>
-                  <option>Pulaar</option>
-                  <option>Sérère</option>
-                </select>
-              </div>
-              <div className="form-group">
                 <label>Code famille</label>
                 <input
                   type="text"
@@ -276,15 +267,6 @@ function Auth() {
               <div className="form-group">
                 <label>Mot de passe</label>
                 <input type="password" placeholder="••••••••" value={inscPassword} onChange={e => setInscPassword(e.target.value)} />
-              </div>
-              <div className="form-group">
-                <label>Langue préférée</label>
-                <select value={inscLangue} onChange={e => setInscLangue(e.target.value)}>
-                  <option>Français</option>
-                  <option>Wolof</option>
-                  <option>Pulaar</option>
-                  <option>Sérère</option>
-                </select>
               </div>
               {inscError && <p style={{color:'#EF5350', fontSize:'.82rem'}}>{inscError}</p>}
               <button className="btn-auth" onClick={handleEmailSignUp} disabled={inscChargement}>
