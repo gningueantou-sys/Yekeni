@@ -21,6 +21,8 @@ function Chat() {
   const [showReactions, setShowReactions] = useState(null);
   const messagesEndRef = useRef(null);
   const profilsMapRef = useRef({});
+  const presenceChannelRef = useRef(null);
+  const [enLigne, setEnLigne] = useState(new Set());
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -34,6 +36,7 @@ function Chat() {
     const profil = profilsMapRef.current[row.auteur_id];
     return {
       id: row.id,
+      auteurId: row.auteur_id,
       auteur: profil?.nom_complet || 'Membre',
       avatarUrl: profil?.avatar_url || null,
       texte: row.texte,
@@ -97,11 +100,31 @@ function Chat() {
           setMessages(prev => prev.map(m => m.id === payload.new.id ? mapRow(payload.new, user.id) : m));
         })
         .subscribe();
+
+      // Présence en ligne : qui a le chat ouvert en ce moment, via Supabase
+      // Realtime Presence (pas une simulation — basé sur une vraie connexion websocket).
+      const presenceChannel = supabase.channel(`presence-${profil.famille_id}`, {
+        config: { presence: { key: user.id } },
+      });
+      presenceChannel
+        .on('presence', { event: 'sync' }, () => {
+          const etat = presenceChannel.presenceState();
+          setEnLigne(new Set(Object.keys(etat)));
+        })
+        .subscribe(async (status) => {
+          if (status === 'SUBSCRIBED') {
+            await presenceChannel.track({ en_ligne_depuis: new Date().toISOString() });
+          }
+        });
+      presenceChannelRef.current = presenceChannel;
     }
 
     init();
 
-    return () => { if (canal) supabase.removeChannel(canal); };
+    return () => {
+      if (canal) supabase.removeChannel(canal);
+      if (presenceChannelRef.current) supabase.removeChannel(presenceChannelRef.current);
+    };
   }, []);
 
   const envoyerMessage = async () => {
@@ -153,7 +176,12 @@ function Chat() {
           <div className="chat-famille-avatar">👨‍👩‍👧‍👦</div>
           <div>
             <h2>Chat familial</h2>
-            <p>{nombreMembres} membre{nombreMembres>1?'s':''}</p>
+            <p>
+              {nombreMembres} membre{nombreMembres>1?'s':''}
+              {enLigne.size > 0 && (
+                <span style={{color:'#2D6A4F', fontWeight:600}}> · 🟢 {enLigne.size} en ligne</span>
+              )}
+            </p>
           </div>
         </div>
       </div>
@@ -164,9 +192,17 @@ function Chat() {
         {messages.map(m => (
           <div key={m.id} className={`message-wrapper ${m.moi ? 'moi' : ''}`}>
             {!m.moi && (
-              m.avatarUrl
-                ? <img src={m.avatarUrl} alt={m.auteur} className="msg-avatar" style={{objectFit:'cover'}}/>
-                : <span className="msg-avatar">👤</span>
+              <span style={{position:'relative', display:'inline-block'}}>
+                {m.avatarUrl
+                  ? <img src={m.avatarUrl} alt={m.auteur} className="msg-avatar" style={{objectFit:'cover'}}/>
+                  : <span className="msg-avatar">👤</span>}
+                {enLigne.has(m.auteurId) && (
+                  <span style={{
+                    position:'absolute', bottom:-2, right:-2, width:10, height:10,
+                    background:'#2D6A4F', border:'2px solid white', borderRadius:'50%',
+                  }} title="En ligne"/>
+                )}
+              </span>
             )}
             <div className="message-bubble-wrapper">
               {!m.moi && <p className="msg-nom">{m.auteur}</p>}

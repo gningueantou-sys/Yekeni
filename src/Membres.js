@@ -539,7 +539,7 @@ export default function Membres() {
               </div>
             </div>
             <div className="form-row">
-              <div className="form-group"><label>Ville</label>
+              <div className="form-group"><label>Ville de résidence</label>
                 <input type="text" placeholder="Dakar" value={nouveau.ville} onChange={e=>setNouveau({...nouveau,ville:e.target.value})}/>
               </div>
               <div className="form-group"><label>Pays</label>

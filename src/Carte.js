@@ -134,6 +134,10 @@ function Carte() {
   return (
     <div className="carte-page">
 
+      <p style={{color:'#888', fontSize:'.8rem', margin:'0 0 1rem'}}>
+        📍 Ville de résidence déclarée par chaque membre — pas une localisation en temps réel.
+      </p>
+
       {/* STATS */}
       <div className="carte-stats">
         <div className="carte-stat-card">
